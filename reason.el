@@ -27,3 +27,26 @@
     (should (reason-variable-p x))
     (should (reason-variable-p y))
     (should (reason-variable-p z))))
+
+;; substitutions
+
+(defun reason-walk (variable substitution)
+  "Return the value associated with VARIABLE in
+SUBSTITUTION if there is one, else VARIABLE."
+  (let ((association (and (reason-variable-p variable)
+                          (assoc variable substitution))))
+    (cond
+     ((consp association)
+      (reason-walk (cadr association) substitution))
+     (t variable))))
+
+(ert-deftest reason-walk-test ()
+  (reason-with-variables (u v w x y z)
+    (let ((sub-1 `((,z a) (,x ,w) (,y ,z)))
+          (sub-2 `((,x b) (,z ,y) (,w (,x e ,z)) (,u ,w))))
+      (should (equal (reason-walk z sub-1) 'a))
+      (should (equal (reason-walk y sub-1) 'a))
+      (should (equal (reason-walk x sub-1) w))
+      (should (equal (reason-walk w sub-1) w))
+      (should (equal (reason-walk x sub-2) 'b))
+      (should (equal (reason-walk u sub-2) `(,x e ,z))))))
