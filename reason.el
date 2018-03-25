@@ -40,13 +40,17 @@ SUBSTITUTION if there is one, else VARIABLE."
       (reason-walk (cadr association) substitution))
      (t variable))))
 
+(defmacro reason-should-equal(f1 f2)
+  "Assert that f1 and f2 are equal."
+  `(should (equal ,f1 ,f2)))
+
 (ert-deftest reason-walk-test ()
   (reason-with-variables (u v w x y z)
     (let ((sub-1 `((,z a) (,x ,w) (,y ,z)))
           (sub-2 `((,x b) (,z ,y) (,w (,x e ,z)) (,u ,w))))
-      (should (equal (reason-walk z sub-1) 'a))
-      (should (equal (reason-walk y sub-1) 'a))
-      (should (equal (reason-walk x sub-1) w))
-      (should (equal (reason-walk w sub-1) w))
-      (should (equal (reason-walk x sub-2) 'b))
-      (should (equal (reason-walk u sub-2) `(,x e ,z))))))
+      (reason-should-equal (reason-walk z sub-1) 'a)
+      (reason-should-equal (reason-walk y sub-1) 'a)
+      (reason-should-equal (reason-walk x sub-1) w)
+      (reason-should-equal (reason-walk w sub-1) w)
+      (reason-should-equal (reason-walk x sub-2) 'b)
+      (reason-should-equal (reason-walk u sub-2) `(,x e ,z)))))
