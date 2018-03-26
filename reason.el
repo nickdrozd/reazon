@@ -70,3 +70,28 @@ SUBSTITUTION if there is one, else VARIABLE."
   (reason-with-variables (x y)
     (should (reason-occurs-p x x '()))
     (should (reason-occurs-p x `(,y) `((,y ,x))))))
+
+(defvar reason-false '!F "")
+
+(defun reason-extend (x v s)
+  ""
+  (if (reason-occurs-p x v s)
+      reason-false
+    (cons `(,x ,v) s)))
+
+(defmacro reason-should-not (&rest forms)
+  ""
+  (let ((should-nots (mapcar (lambda (form)
+                               `(reason-should-equal ,form reason-false))
+                             forms)))
+    `(progn ,@should-nots)))
+
+(ert-deftest reason-extend-test ()
+  (reason-with-variables (x y z)
+    (reason-should-not
+     (reason-extend x x '())
+     (reason-extend x `(,x) '())
+     (reason-extend x `(,y) `((,y ,x))))
+    (reason-should-equal
+     (reason-walk y (reason-extend x 'e `((,z ,x) (,y ,z))))
+     'e)))
