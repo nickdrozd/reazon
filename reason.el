@@ -95,3 +95,45 @@ SUBSTITUTION if there is one, else VARIABLE."
     (reason-should-equal
      (reason-walk y (reason-extend x 'e `((,z ,x) (,y ,z))))
      'e)))
+
+;; unification
+
+(defun reason-unify (u v s)
+  ""
+  (let ((u (reason-walk u s))
+        (v (reason-walk v s)))
+    (cond
+     ((equal u v)
+      s)
+     ((reason-variable-p u)
+      (reason-extend u v s))
+     ((reason-variable-p v)
+      (reason-extend v u s))
+     ((and (consp u) (consp v))
+      (let ((s (reason-unify (car u) (car v) s)))
+        (if (equal s reason-false)
+            reason-false
+          (reason-unify (cadr u) (cadr v) s))))
+     (t reason-false))))
+
+(defun ||| (u v)
+  ""
+  (lambda (s)
+    (let ((s (reason-unify u v s)))
+      (if (equal s reason-false)
+          '()
+        `(,s)))))
+
+(defun !S (s)
+  ""
+  `(,s))
+
+(defun !U (_s)
+  ""
+  '())
+
+(ert-deftest reason-unification-test ()
+  (reason-should-equal (funcall (||| 4 4) '()) '(()))
+  (reason-should-equal (!S '()) '(()))
+  (reason-should-equal (funcall (||| 4 5) '()) '())
+  (reason-should-equal (!U '()) '()))
