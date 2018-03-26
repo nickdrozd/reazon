@@ -54,3 +54,19 @@ SUBSTITUTION if there is one, else VARIABLE."
       (reason-should-equal (reason-walk w sub-1) w)
       (reason-should-equal (reason-walk x sub-2) 'b)
       (reason-should-equal (reason-walk u sub-2) `(,x e ,z)))))
+
+(defun reason-occurs-p (x v s)
+  ""
+  (let ((v (reason-walk v s)))
+    (cond
+     ((reason-variable-p v)
+      (equal v x))
+     ((consp v)
+      (or (reason-occurs-p x (car v) s)
+          (reason-occurs-p x (cadr v) s)))
+     (t nil))))
+
+(ert-deftest reason-occurs-test ()
+  (reason-with-variables (x y)
+    (should (reason-occurs-p x x '()))
+    (should (reason-occurs-p x `(,y) `((,y ,x))))))
