@@ -37,8 +37,21 @@ SUBSTITUTION if there is one, else VARIABLE."
                           (assoc variable substitution))))
     (cond
      ((consp association)
-      (reason-walk (cadr association) substitution))
+      (reason-walk (cdr association) substitution))
      (t variable))))
+
+(defun reason-walk* (v s)
+  ""
+  (let ((v (reason-walk v s)))
+    (cond
+     ((reason-variable-p v)
+      v)
+     ((consp v)
+      (cons
+       (reason-walk* (car v) s)
+       (reason-walk* (cdr v) s)))
+     (t
+      v))))
 
 (defmacro reason-should-equal(f1 f2)
   "Assert that f1 and f2 are equal."
@@ -46,14 +59,15 @@ SUBSTITUTION if there is one, else VARIABLE."
 
 (ert-deftest reason-walk-test ()
   (reason-with-variables (u v w x y z)
-    (let ((sub-1 `((,z a) (,x ,w) (,y ,z)))
-          (sub-2 `((,x b) (,z ,y) (,w (,x e ,z)) (,u ,w))))
+    (let ((sub-1 `((,z . a) (,x . ,w) (,y . ,z)))
+          (sub-2 `((,x . b) (,z . ,y) (,w . (,x e ,z)) (,u . ,w))))
       (reason-should-equal (reason-walk z sub-1) 'a)
       (reason-should-equal (reason-walk y sub-1) 'a)
       (reason-should-equal (reason-walk x sub-1) w)
       (reason-should-equal (reason-walk w sub-1) w)
       (reason-should-equal (reason-walk x sub-2) 'b)
-      (reason-should-equal (reason-walk u sub-2) `(,x e ,z)))))
+      (reason-should-equal (reason-walk u sub-2) `(,x e ,z))
+      (reason-should-equal (reason-walk* u sub-2) `(b e ,y)))))
 
 (defun reason-occurs-p (x v s)
   ""
@@ -63,13 +77,13 @@ SUBSTITUTION if there is one, else VARIABLE."
       (equal v x))
      ((consp v)
       (or (reason-occurs-p x (car v) s)
-          (reason-occurs-p x (cadr v) s)))
+          (reason-occurs-p x (cdr v) s)))
      (t nil))))
 
 (ert-deftest reason-occurs-test ()
   (reason-with-variables (x y)
     (should (reason-occurs-p x x '()))
-    (should (reason-occurs-p x `(,y) `((,y ,x))))))
+    (should (reason-occurs-p x `(,y) `((,y . ,x))))))
 
 (defvar reason-false '!F "")
 
@@ -77,7 +91,7 @@ SUBSTITUTION if there is one, else VARIABLE."
   ""
   (if (reason-occurs-p x v s)
       reason-false
-    (cons `(,x ,v) s)))
+    (cons `(,x . ,v) s)))
 
 (defmacro reason-should-not (&rest forms)
   ""
@@ -91,9 +105,9 @@ SUBSTITUTION if there is one, else VARIABLE."
     (reason-should-not
      (reason-extend x x '())
      (reason-extend x `(,x) '())
-     (reason-extend x `(,y) `((,y ,x))))
+     (reason-extend x `(,y) `((,y . ,x))))
     (reason-should-equal
-     (reason-walk y (reason-extend x 'e `((,z ,x) (,y ,z))))
+     (reason-walk y (reason-extend x 'e `((,z . ,x) (,y . ,z))))
      'e)))
 
 ;; unification
@@ -113,7 +127,7 @@ SUBSTITUTION if there is one, else VARIABLE."
       (let ((s (reason-unify (car u) (car v) s)))
         (if (equal s reason-false)
             reason-false
-          (reason-unify (cadr u) (cadr v) s))))
+          (reason-unify (cdr u) (cdr v) s))))
      (t reason-false))))
 
 (defun ||| (u v)
