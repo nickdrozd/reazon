@@ -151,3 +151,38 @@ SUBSTITUTION if there is one, else VARIABLE."
   (reason-should-equal (!S '()) '(()))
   (reason-should-equal (funcall (||| 4 5) '()) '())
   (reason-should-equal (!U '()) '()))
+
+;; reification
+
+(defun reason-reify-name (number)
+  "Return the symbol '_$NUMBER."
+  (intern (concat "_" (number-to-string number))))
+
+(defun reason-reify-s (v r)
+  ""
+  (let ((v (reason-walk v r)))
+    (cond
+     ((reason-variable-p v)
+      (let ((rn (reason-reify-name (length r))))
+        (reason-extend v rn r)))
+     ((consp v)
+      (let ((r (reason-reify-s (car v) r)))
+        (reason-reify-s (cdr v) r)))
+     (t
+      r))))
+
+(defun reason-reify (v)
+  ""
+  (lambda (s)
+    (let ((v (reason-walk* v s)))
+      (let ((r (reason-reify-s v '())))
+        (reason-walk* v r)))))
+
+(ert-deftest reason-reify-test ()
+  (reason-with-variables (u v w x y z)
+    (let ((a1 `(,x . (,u ,w ,y ,z ((ice) ,z))))
+          (a2 `(,y . corn))
+          (a3 `(,w .(,v ,u))))
+      (reason-should-equal
+       (funcall (reason-reify x) `(,a1 ,a2 ,a3))
+       `(_0 (_1 _0) corn _2 ((ice) _2))))))
