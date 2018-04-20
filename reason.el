@@ -211,6 +211,36 @@ SUBSTITUTION if there is one, else VARIABLE."
        (funcall (reason-reify x) `(,a1 ,a2 ,a3))
        `(_0 (_1 _0) corn _2 ((ice) _2))))))
 
+;; streams
+
+;; A STREAM is
+;;   * the empty list,
+;;   * a cons pair whose cdr is a stream, or
+;;   * a function of no arguments whose body is a stream.
+;;
+;; The last of these is called a SUSPENSION.
+
+(defun reason-append (s1 s2)
+  ""
+  (cond
+   ((null s1) s2)
+   ((functionp s1) (lambda () (reason-append s2 (funcall s1))))
+   (t (cons (car s1)
+            (reason-append (cdr s1) s2)))))
+
+(defun reason-pull (s)
+  ""
+  (cond
+   ((null s) nil)
+   ((functionp s) (reason-pull (funcall s)))
+   (t s)))
+
+(ert-deftest reason-stream-test ()
+  (let ((s1 '(a b c d))
+        (s2 `(e f ,(lambda () '(g h))))
+        (s3 (lambda () '(i j k l))))
+    (reason-should-equal (reason-pull (reason-append s3 s1)) '(a b c d i j k l))))
+
 
 (provide 'reason)
 ;;; reason.el ends here
