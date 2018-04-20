@@ -235,11 +235,44 @@ SUBSTITUTION if there is one, else VARIABLE."
    ((functionp s) (reason-pull (funcall s)))
    (t s)))
 
+(defun reason-take (n s)
+  ""
+  (declare (indent 1))
+  (if (null s)
+      nil
+    (cons (car s)
+          (if (and n (zerop (1- n)))
+              nil
+            (reason-take (and n (1- n))
+              (reason-pull (cdr s)))))))
+
 (ert-deftest reason-stream-test ()
   (let ((s1 '(a b c d))
         (s2 `(e f ,(lambda () '(g h))))
         (s3 (lambda () '(i j k l))))
     (reason-should-equal (reason-pull (reason-append s3 s1)) '(a b c d i j k l))))
+
+;; goals
+
+(defun reason-disj-2 (g1 g2)
+  ""
+  (lambda (s)
+    (reason-append (funcall g1 s) (funcall g2 s))))
+
+(defun reason-run-goal (g)
+  ""
+  (reason-pull (funcall g nil)))
+
+(ert-deftest reason-goal-test ()
+  (reason-with-variables (x)
+    (let* ((g (reason-disj-2 (||| 'olive x) (||| 'oil x)))
+           (s (reason-run-goal g))
+           (l (reason-take 5 s))
+           (k (length l)))
+      (reason-should-equal k 2)
+      (reason-should-equal (mapcar #'length l) '(1 1))
+      (reason-should-equal (mapcar (reason-reify x) s) '(olive oil))
+      (reason-should-equal l (reason-take nil s)))))
 
 
 (provide 'reason)
