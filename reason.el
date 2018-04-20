@@ -259,6 +259,19 @@ SUBSTITUTION if there is one, else VARIABLE."
   (lambda (s)
     (reason-append (funcall g1 s) (funcall g2 s))))
 
+(defun reason-append-map (g s)
+  ""
+  (cond
+   ((null s) nil)
+   ((functionp s) (lambda () (reason-append-map g (funcall s))))
+   (t (reason-append (funcall g (car s))
+               (reason-append-map g (cdr s))))))
+
+(defun reason-conj-2 (g1 g2)
+  ""
+  (lambda (s)
+    (reason-append-map g2 (funcall g1 s))))
+
 (defun reason-run-goal (g)
   ""
   (reason-pull (funcall g nil)))
