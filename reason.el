@@ -211,6 +211,12 @@ SUBSTITUTION if there is one, else VARIABLE."
        (funcall (reason-reify x) `(,a1 ,a2 ,a3))
        `(_0 (_1 _0) corn _2 ((ice) _2))))))
 
+(defun reason-call/fresh (name f)
+  "Returns a goal that has access to a variable created from NAME.
+f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
+  (declare (indent 1))
+  (funcall f (reason-make-variable name)))
+
 ;; streams
 
 ;; A STREAM is
