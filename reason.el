@@ -320,6 +320,77 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
       (reason-should-equal (car (reason-pull s)) `((,x . olive))))
     (reason-should-equal (reason-take 3 (reason-run-goal (reason--test-productive))) '(() () ()))))
 
+;; macros
+
+(defmacro reason-disj (&rest goals)
+  ""
+  (pcase (length goals)
+    (0 `!U)
+    (1 (car goals))
+    (_ `(reason-disj-2 ,(car goals) (reason-disj ,@(cdr goals))))))
+
+(defmacro reason-conj (&rest goals)
+  ""
+  (pcase (length goals)
+    (0 `!S)
+    (1 (car goals))
+    (_ `(reason-conj-2 ,(car goals) (reason-conj ,@(cdr goals))))))
+
+(defmacro reason-fresh (vars &rest goals)
+  ""
+  (declare (indent 1))
+  (if (null vars)
+      `(reason-conj ,@goals)
+    (let ((var (car vars)))
+      `(reason-call/fresh ',var
+         (lambda (,var)
+           (reason-fresh ,(cdr vars)
+             ,@goals))))))
+
+(defmacro reason-run (n var &rest goals)
+  ""
+  (declare (indent 2))
+  (if (listp var)
+      (let ((q (gensym)))
+        `(reason-run ,n ,q
+           (reason-fresh ,var
+             (||| ,var ,q)
+             ,@goals)))
+    `(let ((,var (reason-make-variable ',var)))
+       (mapcar
+        (reason-reify ,var)
+        (reason-take ,n
+          (reason-run-goal (reason-conj ,@goals)))))))
+
+(defmacro reason-run* (q &rest goals)
+  ""
+  (declare (indent 1))
+  `(reason-run nil ,q
+     ,@goals))
+
+(defmacro reason-conde (&rest goal-lists)
+  ""
+  `(reason-disj
+    (reason-conj ,@(car goal-lists))
+    (,@(cdr goal-lists))))
+
+(defmacro reason-defrel (name varlist goals)
+  ""
+  (let ((s (gensym)))
+    `(defun ,name ,varlist
+       (lambda (,s)
+         (lambda ()
+           (funcall (reason-conj ,@goals) ,s))))))
+
+(ert-deftest reason-test-macros ()
+  (reason-should-equal (reason-run* q #'!U) '())
+  (reason-should-equal (reason-run* q (||| t q)) '(t))
+  (reason-should-equal (reason-run* q (reason-conj-2 #'!U (||| t q))) '())
+  (reason-should-equal (reason-run* q (reason-conj-2 #'!S (||| t q))) '(t))
+  (reason-should-equal (reason-run* r (reason-conj-2 #'!S (||| 'corn r))) '(corn))
+  (reason-should-equal (reason-run* q (reason-fresh (x) (reason-conj-2 (||| t x) (||| t q)))) '(t))
+  (reason-should-equal (reason-run* s (reason-fresh (x) (reason-fresh (y) (||| `(,x ,y) s)))) '((_0 _1))))
+
 
 (provide 'reason)
 ;;; reason.el ends here
