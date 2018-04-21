@@ -287,6 +287,33 @@ SUBSTITUTION if there is one, else VARIABLE."
       (reason-should-equal (mapcar (reason-reify x) s) '(olive oil))
       (reason-should-equal l (reason-take nil s)))))
 
+(defun reason--test-unproductive ()
+  ""
+  (lambda (s)
+    (lambda ()
+      (funcall (reason--test-unproductive) s))))
+
+(defun reason--test-productive ()
+  ""
+  (lambda (s)
+    (lambda ()
+      (funcall (reason-disj-2 #'!S (reason--test-productive)) s))))
+
+(ert-deftest reason-productivity-test ()
+  (reason-with-variables (x)
+    (let ((s (funcall (reason-disj-2
+                       (||| 'olive x)
+                       (reason--test-unproductive))
+                      nil)))
+      (reason-should-equal (car s) `((,x . olive))))
+    (let ((s (funcall (reason-disj-2
+                       (reason--test-unproductive)
+                       (||| 'olive x))
+                      nil)))
+      (reason-should-equal (car (funcall s)) `((,x . olive)))
+      (reason-should-equal (car (reason-pull s)) `((,x . olive))))
+    (reason-should-equal (reason-take 3 (reason-run-goal (reason--test-productive))) '(() () ()))))
+
 
 (provide 'reason)
 ;;; reason.el ends here
