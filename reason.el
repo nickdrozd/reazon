@@ -460,7 +460,25 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
 
 (ert-deftest reason-test-defrel ()
   (reason-should-equal '(tea cup)
-    (reason-run* x (reason--test-teacup-o x))))
+    (reason-run* x (reason--test-teacup-o x)))
+  (reason-should-equal '((nil t) (tea t) (cup t))
+    (reason-run* (x y)
+      (reason-disj
+       (reason-conj (reason--test-teacup-o x) (||| y t))
+       (reason-conj (||| x nil) (||| y t)))))
+  (reason-should-equal '((tea tea) (tea cup) (cup tea) (cup cup))
+    (reason-run* (x y)
+      (reason--test-teacup-o x)
+      (reason--test-teacup-o y)))
+  (reason-should-equal '(tea cup)
+    (reason-run* x
+      (reason--test-teacup-o x)
+      (reason--test-teacup-o x)))
+  (reason-should-equal '((t tea) (t cup) (tea _0) (cup _0))
+    (reason-run* (x y)
+      (reason-disj
+       (reason-conj (reason--test-teacup-o x) (reason--test-teacup-o x))
+       (reason-conj (||| x t) (reason--test-teacup-o y))))))
 
 
 (provide 'reason)
