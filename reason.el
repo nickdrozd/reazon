@@ -385,8 +385,9 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-conj ,@(car goal-lists))
     (,@(cdr goal-lists))))
 
-(defmacro reason-defrel (name varlist goals)
+(defmacro reason-defrel (name varlist &rest goals)
   ""
+  (declare (indent 2))
   (let ((s (gensym)))
     `(defun ,name ,varlist
        (lambda (,s)
@@ -453,6 +454,13 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
       (||| 'split x)
       (||| 'pea y)
       (||| `(,x ,y) r))))
+
+(reason-defrel reason--test-teacup-o (x)
+  (reason-disj (||| x 'tea) (||| x 'cup)))
+
+(ert-deftest reason-test-defrel ()
+  (reason-should-equal '(tea cup)
+    (reason-run* x (reason--test-teacup-o x))))
 
 
 (provide 'reason)
