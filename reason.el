@@ -399,11 +399,11 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (reason-should-equal '(t)
     (reason-run* q (||| t q)))
   (reason-should-equal '()
-    (reason-run* q (reason-conj #'!U (||| t q))))
+    (reason-run* q #'!U (||| t q)))
   (reason-should-equal '(t)
-    (reason-run* q (reason-conj #'!S (||| t q))))
+    (reason-run* q #'!S (||| t q)))
   (reason-should-equal '(corn)
-    (reason-run* r (reason-conj #'!S (||| 'corn r))))
+    (reason-run* r #'!S (||| 'corn r)))
   (reason-should-equal '(olive oil)
     (reason-run* x (reason-disj (||| 'olive x) (||| 'oil x))))
   (reason-should-equal '(oil olive)
@@ -417,7 +417,8 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (reason-should-equal '(t)
     (reason-run* q
       (reason-fresh (x)
-        (reason-conj (||| t x) (||| t q)))))
+        (||| t x)
+        (||| t q))))
   (reason-should-equal '((_0 _1))
     (reason-run* s
       (reason-fresh (x)
@@ -427,30 +428,26 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* r
       (reason-fresh (x)
         (reason-fresh (y)
-          (reason-conj
-           (||| 'split x)
-           (||| 'pea y)
-           (||| `(,x ,y) r))))))
-  (reason-should-equal '((split pea))
-    (reason-run* r
-      (reason-fresh (x)
-        (reason-fresh (y)
-          (reason-conj
-            (||| 'split x)
-            (||| 'pea y)
-            (||| `(,x ,y) r))))))
-  (reason-should-equal '((split pea))
-    (reason-run* r
-      (reason-fresh (x y)
-        (reason-conj
           (||| 'split x)
           (||| 'pea y)
           (||| `(,x ,y) r)))))
   (reason-should-equal '((split pea))
+    (reason-run* r
+      (reason-fresh (x)
+        (reason-fresh (y)
+          (||| 'split x)
+          (||| 'pea y)
+          (||| `(,x ,y) r)))))
+  (reason-should-equal '((split pea))
+    (reason-run* r
+      (reason-fresh (x y)
+        (||| 'split x)
+        (||| 'pea y)
+        (||| `(,x ,y) r))))
+  (reason-should-equal '((split pea))
     (reason-run* (x y)
-      (reason-conj
-       (||| 'split x)
-       (||| 'pea y)))))
+      (||| 'split x)
+      (||| 'pea y))))
 
 
 (provide 'reason)
