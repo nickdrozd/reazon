@@ -447,7 +447,12 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (reason-should-equal '((split pea))
     (reason-run* (x y)
       (||| 'split x)
-      (||| 'pea y))))
+      (||| 'pea y)))
+  (reason-should-equal '(((split pea) split pea))
+    (reason-run* (r x y)
+      (||| 'split x)
+      (||| 'pea y)
+      (||| `(,x ,y) r))))
 
 
 (provide 'reason)
