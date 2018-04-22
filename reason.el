@@ -509,6 +509,36 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
         (reason-car-o x `(,r ,y))
         (||| x 'pear)))))
 
+(reason-defrel reason-cdr-o (d p)
+  (reason-fresh (a)
+    (||| p `(,a . ,d))))
+
+(ert-deftest reason-test-cdr-o ()
+  (reason-should-equal '(c)
+    (reason-run* r
+      (reason-fresh (v)
+        (reason-cdr-o v '(a c o r n))
+        (reason-car-o r v))))
+  (reason-should-equal '(((raisin pear) a))
+    (reason-run* r
+      (reason-fresh (x y)
+        (reason-cdr-o x '(grape raisin pear))
+        (reason-car-o y '((a) (b) (c)))
+        (||| r (cons x y)))))
+  (reason-should-equal '(t)
+    (reason-run* q
+      (reason-cdr-o '(c o r n) '(a c o r n))
+      (||| q t)))
+  (reason-should-equal '(o)
+    (reason-run* x
+      (reason-cdr-o `(,x r n) '(c o r n))))
+  (reason-should-equal '((a c o r n))
+    (reason-run* l
+      (reason-fresh (x)
+        (reason-cdr-o '(c o r n) l)
+        (reason-car-o x l)
+        (||| x 'a)))))
+
 
 (provide 'reason)
 ;;; reason.el ends here
