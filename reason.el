@@ -77,21 +77,22 @@ SUBSTITUTION if there is one, else VARIABLE."
      (t
       v))))
 
-(defmacro reason-should-equal(f1 f2)
-  "Assert that f1 and f2 are equal."
-  `(should (equal ,f1 ,f2)))
+(defmacro reason-should-equal(expected form)
+  "Assert that FORM evaluates equal to EXPECTED."
+  (declare (indent 1))
+  `(should (equal ,expected ,form)))
 
 (ert-deftest reason-walk-test ()
   (reason-with-variables (u v w x y z)
     (let ((sub-1 `((,z . a) (,x . ,w) (,y . ,z)))
           (sub-2 `((,x . b) (,z . ,y) (,w . (,x e ,z)) (,u . ,w))))
-      (reason-should-equal (reason-walk z sub-1) 'a)
-      (reason-should-equal (reason-walk y sub-1) 'a)
-      (reason-should-equal (reason-walk x sub-1) w)
-      (reason-should-equal (reason-walk w sub-1) w)
-      (reason-should-equal (reason-walk x sub-2) 'b)
-      (reason-should-equal (reason-walk u sub-2) `(,x e ,z))
-      (reason-should-equal (reason-walk* u sub-2) `(b e ,y)))))
+      (reason-should-equal 'a (reason-walk z sub-1))
+      (reason-should-equal 'a (reason-walk y sub-1))
+      (reason-should-equal w (reason-walk x sub-1))
+      (reason-should-equal w (reason-walk w sub-1))
+      (reason-should-equal 'b (reason-walk x sub-2))
+      (reason-should-equal `(,x e ,z) (reason-walk u sub-2))
+      (reason-should-equal `(b e ,y) (reason-walk* u sub-2)))))
 
 (defun reason-occurs-p (x v s)
   ""
@@ -130,9 +131,8 @@ SUBSTITUTION if there is one, else VARIABLE."
      (reason-extend x x '())
      (reason-extend x `(,x) '())
      (reason-extend x `(,y) `((,y . ,x))))
-    (reason-should-equal
-     (reason-walk y (reason-extend x 'e `((,z . ,x) (,y . ,z))))
-     'e)))
+    (reason-should-equal 'e
+      (reason-walk y (reason-extend x 'e `((,z . ,x) (,y . ,z)))))))
 
 ;; unification
 
@@ -171,10 +171,14 @@ SUBSTITUTION if there is one, else VARIABLE."
   '())
 
 (ert-deftest reason-unification-test ()
-  (reason-should-equal (funcall (||| 4 4) '()) '(()))
-  (reason-should-equal (!S '()) '(()))
-  (reason-should-equal (funcall (||| 4 5) '()) '())
-  (reason-should-equal (!U '()) '()))
+  (reason-should-equal '(())
+    (funcall (||| 4 4) '()))
+  (reason-should-equal '(())
+    (!S '()))
+  (reason-should-equal '()
+    (funcall (||| 4 5) '()))
+  (reason-should-equal '()
+    (!U '())))
 
 ;; reification
 
@@ -207,9 +211,8 @@ SUBSTITUTION if there is one, else VARIABLE."
     (let ((a1 `(,x . (,u ,w ,y ,z ((ice) ,z))))
           (a2 `(,y . corn))
           (a3 `(,w .(,v ,u))))
-      (reason-should-equal
-       (funcall (reason-reify x) `(,a1 ,a2 ,a3))
-       `(_0 (_1 _0) corn _2 ((ice) _2))))))
+      (reason-should-equal `(_0 (_1 _0) corn _2 ((ice) _2))
+        (funcall (reason-reify x) `(,a1 ,a2 ,a3))))))
 
 (defun reason-call/fresh (name f)
   "Returns a goal that has access to a variable created from NAME.
@@ -256,7 +259,8 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (let ((s1 '(a b c d))
         (s2 `(e f ,(lambda () '(g h))))
         (s3 (lambda () '(i j k l))))
-    (reason-should-equal (reason-pull (reason-append s3 s1)) '(a b c d i j k l))))
+    (reason-should-equal '(a b c d i j k l)
+      (reason-pull (reason-append s3 s1)))))
 
 ;; goals
 
@@ -289,9 +293,12 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
            (l (reason-take 5 s))
            (k (length l)))
       (reason-should-equal k 2)
-      (reason-should-equal (mapcar #'length l) '(1 1))
-      (reason-should-equal (mapcar (reason-reify x) s) '(olive oil))
-      (reason-should-equal l (reason-take nil s)))))
+      (reason-should-equal '(1 1)
+        (mapcar #'length l))
+      (reason-should-equal '(olive oil)
+        (mapcar (reason-reify x) s))
+      (reason-should-equal l
+        (reason-take nil s)))))
 
 (defun reason--test-unproductive ()
   ""
@@ -311,14 +318,18 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
                        (||| 'olive x)
                        (reason--test-unproductive))
                       nil)))
-      (reason-should-equal (car s) `((,x . olive))))
+      (reason-should-equal `((,x . olive))
+        (car s)))
     (let ((s (funcall (reason-disj-2
                        (reason--test-unproductive)
                        (||| 'olive x))
                       nil)))
-      (reason-should-equal (car (funcall s)) `((,x . olive)))
-      (reason-should-equal (car (reason-pull s)) `((,x . olive))))
-    (reason-should-equal (reason-take 3 (reason-run-goal (reason--test-productive))) '(() () ()))))
+      (reason-should-equal `((,x . olive))
+        (car (funcall s)))
+      (reason-should-equal `((,x . olive))
+        (car (reason-pull s))))
+    (reason-should-equal '(() () ())
+      (reason-take 3 (reason-run-goal (reason--test-productive))))))
 
 ;; macros
 
@@ -383,13 +394,20 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
            (funcall (reason-conj ,@goals) ,s))))))
 
 (ert-deftest reason-test-macros ()
-  (reason-should-equal (reason-run* q #'!U) '())
-  (reason-should-equal (reason-run* q (||| t q)) '(t))
-  (reason-should-equal (reason-run* q (reason-conj-2 #'!U (||| t q))) '())
-  (reason-should-equal (reason-run* q (reason-conj-2 #'!S (||| t q))) '(t))
-  (reason-should-equal (reason-run* r (reason-conj-2 #'!S (||| 'corn r))) '(corn))
-  (reason-should-equal (reason-run* q (reason-fresh (x) (reason-conj-2 (||| t x) (||| t q)))) '(t))
-  (reason-should-equal (reason-run* s (reason-fresh (x) (reason-fresh (y) (||| `(,x ,y) s)))) '((_0 _1))))
+  (reason-should-equal '()
+    (reason-run* q #'!U))
+  (reason-should-equal '(t)
+    (reason-run* q (||| t q)))
+  (reason-should-equal '()
+    (reason-run* q (reason-conj-2 #'!U (||| t q))))
+  (reason-should-equal '(t)
+    (reason-run* q (reason-conj-2 #'!S (||| t q))))
+  (reason-should-equal '(corn)
+    (reason-run* r (reason-conj-2 #'!S (||| 'corn r))))
+  (reason-should-equal '(t)
+    (reason-run* q (reason-fresh (x) (reason-conj-2 (||| t x) (||| t q)))))
+  (reason-should-equal '((_0 _1))
+    (reason-run* s (reason-fresh (x) (reason-fresh (y) (||| `(,x ,y) s))))))
 
 
 (provide 'reason)
