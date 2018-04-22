@@ -365,7 +365,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
       (let ((q (gensym)))
         `(reason-run ,n ,q
            (reason-fresh ,var
-             (||| ,var ,q)
+             (||| (list ,@var) ,q)
              ,@goals)))
     `(let ((,var (reason-make-variable ',var)))
        (mapcar
@@ -448,7 +448,12 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
          (reason-conj-2
           (||| 'split x)
           (||| 'pea y))
-         (||| `(,x ,y) r))))))
+         (||| `(,x ,y) r)))))
+  (reason-should-equal '((split pea))
+    (reason-run* (x y)
+      (reason-conj-2
+       (||| 'split x)
+       (||| 'pea y)))))
 
 
 (provide 'reason)
