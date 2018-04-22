@@ -491,25 +491,25 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
        ((||| x 'olive) #'!U)
        ((||| x 'oil))))))
 
-(reason-defrel reason-car-o (a p)
+(reason-defrel reason-car-o (p a)
   (reason-fresh (d)
     (||| p `(,a . ,d))))
 
 (ert-deftest reason-test-car-o ()
   (reason-should-equal '(a)
     (reason-run* p
-      (reason-car-o p '(a c o r n))))
+      (reason-car-o '(a c o r n) p)))
   (reason-should-equal '(t)
     (reason-run* q
-      (reason-car-o 'a '(a c o r n))
+      (reason-car-o '(a c o r n) 'a)
       (||| q t)))
   (reason-should-equal '(pear)
     (reason-run* r
       (reason-fresh (x y)
-        (reason-car-o x `(,r ,y))
+        (reason-car-o `(,r ,y) x)
         (||| x 'pear)))))
 
-(reason-defrel reason-cdr-o (d p)
+(reason-defrel reason-cdr-o (p d)
   (reason-fresh (a)
     (||| p `(,a . ,d))))
 
@@ -517,26 +517,26 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (reason-should-equal '(c)
     (reason-run* r
       (reason-fresh (v)
-        (reason-cdr-o v '(a c o r n))
-        (reason-car-o r v))))
+        (reason-cdr-o '(a c o r n) v)
+        (reason-car-o v r))))
   (reason-should-equal '(((raisin pear) a))
     (reason-run* r
       (reason-fresh (x y)
-        (reason-cdr-o x '(grape raisin pear))
-        (reason-car-o y '((a) (b) (c)))
+        (reason-cdr-o '(grape raisin pear) x)
+        (reason-car-o '((a) (b) (c)) y)
         (||| r (cons x y)))))
   (reason-should-equal '(t)
     (reason-run* q
-      (reason-cdr-o '(c o r n) '(a c o r n))
+      (reason-cdr-o '(a c o r n) '(c o r n))
       (||| q t)))
   (reason-should-equal '(o)
     (reason-run* x
-      (reason-cdr-o `(,x r n) '(c o r n))))
+      (reason-cdr-o '(c o r n) `(,x r n))))
   (reason-should-equal '((a c o r n))
     (reason-run* l
       (reason-fresh (x)
-        (reason-cdr-o '(c o r n) l)
-        (reason-car-o x l)
+        (reason-cdr-o l '(c o r n))
+        (reason-car-o l x)
         (||| x 'a)))))
 
 (reason-defrel reason-cons-o (a d p)
