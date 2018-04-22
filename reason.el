@@ -399,25 +399,25 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (reason-should-equal '(t)
     (reason-run* q (||| t q)))
   (reason-should-equal '()
-    (reason-run* q (reason-conj-2 #'!U (||| t q))))
+    (reason-run* q (reason-conj #'!U (||| t q))))
   (reason-should-equal '(t)
-    (reason-run* q (reason-conj-2 #'!S (||| t q))))
+    (reason-run* q (reason-conj #'!S (||| t q))))
   (reason-should-equal '(corn)
-    (reason-run* r (reason-conj-2 #'!S (||| 'corn r))))
+    (reason-run* r (reason-conj #'!S (||| 'corn r))))
   (reason-should-equal '(olive oil)
-    (reason-run* x (reason-disj-2 (||| 'olive x) (||| 'oil x))))
+    (reason-run* x (reason-disj (||| 'olive x) (||| 'oil x))))
   (reason-should-equal '(oil olive)
-    (reason-run* x (reason-disj-2 (||| 'oil x) (||| 'olive x))))
+    (reason-run* x (reason-disj (||| 'oil x) (||| 'olive x))))
   (reason-should-equal '(oil)
-    (reason-run* x (reason-disj-2 (reason-conj-2 (||| 'olive x) #'!U) (||| 'oil x))))
+    (reason-run* x (reason-disj (reason-conj-2 (||| 'olive x) #'!U) (||| 'oil x))))
   (reason-should-equal '(olive _0 oil)
-    (reason-run* x (reason-disj-2 (reason-conj-2 (||| 'virgin x) #'!U) (reason-disj-2 (||| 'olive x) (reason-disj-2 #'!S(||| 'oil x)))))))
+    (reason-run* x (reason-disj (reason-conj (||| 'virgin x) #'!U) (reason-disj (||| 'olive x) (reason-disj #'!S(||| 'oil x)))))))
 
 (ert-deftest reason-test-fresh ()
   (reason-should-equal '(t)
     (reason-run* q
       (reason-fresh (x)
-        (reason-conj-2 (||| t x) (||| t q)))))
+        (reason-conj (||| t x) (||| t q)))))
   (reason-should-equal '((_0 _1))
     (reason-run* s
       (reason-fresh (x)
@@ -427,31 +427,28 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* r
       (reason-fresh (x)
         (reason-fresh (y)
-          (reason-conj-2
+          (reason-conj
            (||| 'split x)
-           (reason-conj-2
-            (||| 'pea y)
-            (||| `(,x ,y) r)))))))
+           (||| 'pea y)
+           (||| `(,x ,y) r))))))
   (reason-should-equal '((split pea))
     (reason-run* r
       (reason-fresh (x)
         (reason-fresh (y)
-          (reason-conj-2
-           (reason-conj-2
+          (reason-conj
             (||| 'split x)
-            (||| 'pea y))
-           (||| `(,x ,y) r))))))
+            (||| 'pea y)
+            (||| `(,x ,y) r))))))
   (reason-should-equal '((split pea))
     (reason-run* r
       (reason-fresh (x y)
-        (reason-conj-2
-         (reason-conj-2
+        (reason-conj
           (||| 'split x)
-          (||| 'pea y))
-         (||| `(,x ,y) r)))))
+          (||| 'pea y)
+          (||| `(,x ,y) r)))))
   (reason-should-equal '((split pea))
     (reason-run* (x y)
-      (reason-conj-2
+      (reason-conj
        (||| 'split x)
        (||| 'pea y)))))
 
