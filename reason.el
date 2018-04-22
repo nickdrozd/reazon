@@ -565,6 +565,22 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
         (reason-cons-o x `(a ,x c) l)
         (||| l `(d a ,x c))))))
 
+(reason-defrel reason-null-o (x)
+  (||| x '()))
+
+(ert-deftest reason-test-null-o ()
+  (reason-should-equal '()
+    (reason-run* q
+      (reason-null-o '(grape raisin pear))
+      (||| q t)))
+  (reason-should-equal '(t)
+    (reason-run* q
+      (reason-null-o '())
+      (||| q t)))
+  (reason-should-equal '(())
+    (reason-run* x
+      (reason-null-o x))))
+
 
 (provide 'reason)
 ;;; reason.el ends here
