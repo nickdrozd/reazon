@@ -393,7 +393,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
          (lambda ()
            (funcall (reason-conj ,@goals) ,s))))))
 
-(ert-deftest reason-test-macros ()
+(ert-deftest reason-test-run-basic ()
   (reason-should-equal '()
     (reason-run* q #'!U))
   (reason-should-equal '(t)
@@ -407,7 +407,15 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (reason-should-equal '(t)
     (reason-run* q (reason-fresh (x) (reason-conj-2 (||| t x) (||| t q)))))
   (reason-should-equal '((_0 _1))
-    (reason-run* s (reason-fresh (x) (reason-fresh (y) (||| `(,x ,y) s))))))
+    (reason-run* s (reason-fresh (x) (reason-fresh (y) (||| `(,x ,y) s)))))
+  (reason-should-equal '(olive oil)
+    (reason-run* x (reason-disj-2 (||| 'olive x) (||| 'oil x))))
+  (reason-should-equal '(oil olive)
+    (reason-run* x (reason-disj-2 (||| 'oil x) (||| 'olive x))))
+  (reason-should-equal '(oil)
+    (reason-run* x (reason-disj-2 (reason-conj-2 (||| 'olive x) #'!U) (||| 'oil x))))
+  (reason-should-equal '(olive _0 oil)
+    (reason-run* x (reason-disj-2 (reason-conj-2 (||| 'virgin x) #'!U) (reason-disj-2 (||| 'olive x) (reason-disj-2 #'!S(||| 'oil x)))))))
 
 
 (provide 'reason)
