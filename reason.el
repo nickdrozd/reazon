@@ -404,10 +404,6 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* q (reason-conj-2 #'!S (||| t q))))
   (reason-should-equal '(corn)
     (reason-run* r (reason-conj-2 #'!S (||| 'corn r))))
-  (reason-should-equal '(t)
-    (reason-run* q (reason-fresh (x) (reason-conj-2 (||| t x) (||| t q)))))
-  (reason-should-equal '((_0 _1))
-    (reason-run* s (reason-fresh (x) (reason-fresh (y) (||| `(,x ,y) s)))))
   (reason-should-equal '(olive oil)
     (reason-run* x (reason-disj-2 (||| 'olive x) (||| 'oil x))))
   (reason-should-equal '(oil olive)
@@ -416,6 +412,43 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* x (reason-disj-2 (reason-conj-2 (||| 'olive x) #'!U) (||| 'oil x))))
   (reason-should-equal '(olive _0 oil)
     (reason-run* x (reason-disj-2 (reason-conj-2 (||| 'virgin x) #'!U) (reason-disj-2 (||| 'olive x) (reason-disj-2 #'!S(||| 'oil x)))))))
+
+(ert-deftest reason-test-fresh ()
+  (reason-should-equal '(t)
+    (reason-run* q
+      (reason-fresh (x)
+        (reason-conj-2 (||| t x) (||| t q)))))
+  (reason-should-equal '((_0 _1))
+    (reason-run* s
+      (reason-fresh (x)
+        (reason-fresh (y)
+          (||| `(,x ,y) s)))))
+  (reason-should-equal '((split pea))
+    (reason-run* r
+      (reason-fresh (x)
+        (reason-fresh (y)
+          (reason-conj-2
+           (||| 'split x)
+           (reason-conj-2
+            (||| 'pea y)
+            (||| `(,x ,y) r)))))))
+  (reason-should-equal '((split pea))
+    (reason-run* r
+      (reason-fresh (x)
+        (reason-fresh (y)
+          (reason-conj-2
+           (reason-conj-2
+            (||| 'split x)
+            (||| 'pea y))
+           (||| `(,x ,y) r))))))
+  (reason-should-equal '((split pea))
+    (reason-run* r
+      (reason-fresh (x y)
+        (reason-conj-2
+         (reason-conj-2
+          (||| 'split x)
+          (||| 'pea y))
+         (||| `(,x ,y) r))))))
 
 
 (provide 'reason)
