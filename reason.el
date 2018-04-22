@@ -478,6 +478,19 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
        ((reason--test-teacup-o x) (reason--test-teacup-o x))
        ((||| x t) (reason--test-teacup-o y))))))
 
+(ert-deftest reason-test-conde ()
+  (reason-should-equal '((split pea) (navy bean) (red lentil))
+    (reason-run* (x y)
+      (reason-conde
+       ((||| x 'split) (||| y 'pea))
+       ((||| x 'navy) (||| y 'bean))
+       ((||| x 'red) (||| y 'lentil)))))
+  (reason-should-equal '(oil)
+    (reason-run* x
+      (reason-conde
+       ((||| x 'olive) #'!U)
+       ((||| x 'oil))))))
+
 
 (provide 'reason)
 ;;; reason.el ends here
