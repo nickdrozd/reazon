@@ -493,7 +493,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
 
 (reason-defrel reason-car-o (p a)
   (reason-fresh (d)
-    (||| p `(,a . ,d))))
+    (reason-cons-o a d p)))
 
 (ert-deftest reason-test-car-o ()
   (reason-should-equal '(a)
@@ -511,7 +511,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
 
 (reason-defrel reason-cdr-o (p d)
   (reason-fresh (a)
-    (||| p `(,a . ,d))))
+    (reason-cons-o a d p)))
 
 (ert-deftest reason-test-cdr-o ()
   (reason-should-equal '(c)
