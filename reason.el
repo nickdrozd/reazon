@@ -352,8 +352,9 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (declare (indent 1))
   (if (null vars)
       `(reason-conj ,@goals)
-    (let ((var (car vars)))
-      `(reason-call/fresh ',var
+    (let ((var (car vars))
+          (fresh (gensym)))
+      `(reason-call/fresh ',fresh
          (lambda (,var)
            (reason-fresh ,(cdr vars)
              ,@goals))))))
@@ -455,7 +456,20 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* (r x y)
       (||| 'split x)
       (||| 'pea y)
-      (||| `(,x ,y) r))))
+      (||| `(,x ,y) r)))
+  (reason-should-equal '((_0 _1) (_0 _1))
+    (reason-run* (x y)
+      (reason-fresh (z)
+        (reason-conde
+         ((||| x z) (reason-fresh (z) (||| y z)))
+         ((reason-fresh (z) (||| x z)) (||| y z))))))
+  (reason-should-equal '((nil _0) (_0 nil))
+    (reason-run* (x y)
+      (reason-fresh (z)
+        (reason-conde
+         ((||| x z) (reason-fresh (z) (||| y z)))
+         ((reason-fresh (z) (||| x z)) (||| y z)))
+        (||| nil z)))))
 
 (reason-defrel reason--test-teacup-o (x)
   (reason-disj (||| x 'tea) (||| x 'cup)))
