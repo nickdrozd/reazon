@@ -530,7 +530,25 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* r
       (reason-fresh (x y)
         (reason-car-o `(,r ,y) x)
-        (||| x 'pear)))))
+        (||| x 'pear))))
+  (reason-should-equal '((grape a))
+    (reason-run* r
+      (reason-fresh (x y)
+        (reason-fresh (d) (||| (cons x d) '(grape raisin pear)))
+        (reason-fresh (d) (||| (cons y d) '((a) (b) (c))))
+        (||| r (cons x y))))))
+
+(reason-defrel reason-cdr-o (p d)
+  (reason-fresh (a)
+    (reason-cons-o a d p)))
+(ert-deftest reason-test-cxr-bugs ()
+  :expected-result :failed
+  (reason-should-equal '((grape a))
+    (reason-run* r
+      (reason-fresh (x y)
+        (reason-car-o '(grape raisin pear) x)
+        (reason-car-o '((a) (b) (c)) y)
+        (||| r (cons x y))))))
 
 (reason-defrel reason-cdr-o (p d)
   (reason-fresh (a)
