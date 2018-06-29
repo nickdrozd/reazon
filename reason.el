@@ -352,9 +352,8 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (declare (indent 1))
   (if (null vars)
       `(reason-conj ,@goals)
-    (let ((var (car vars))
-          (fresh (gensym)))
-      `(reason-call/fresh ',fresh
+    (let ((var (car vars)))
+      `(reason-call/fresh (gensym)
          (lambda (,var)
            (reason-fresh ,(cdr vars)
              ,@goals))))))
@@ -536,13 +535,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
       (reason-fresh (x y)
         (reason-fresh (d) (||| (cons x d) '(grape raisin pear)))
         (reason-fresh (d) (||| (cons y d) '((a) (b) (c))))
-        (||| r (cons x y))))))
-
-(reason-defrel reason-cdr-o (p d)
-  (reason-fresh (a)
-    (reason-cons-o a d p)))
-(ert-deftest reason-test-cxr-bugs ()
-  :expected-result :failed
+        (||| r (cons x y)))))
   (reason-should-equal '((grape a))
     (reason-run* r
       (reason-fresh (x y)
@@ -604,7 +597,17 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* l
       (reason-fresh (x)
         (reason-cons-o x `(a ,x c) l)
-        (||| l `(d a ,x c))))))
+        (||| l `(d a ,x c)))))
+  (reason-should-equal '((b o n u s))
+    (reason-run* l
+      (reason-fresh (d p x y w)
+        (reason-cons-o w '(n u s) p)
+        (reason-cdr-o l p)
+        (reason-car-o l x)
+        (||| x 'b)
+        (reason-cdr-o l d)
+        (reason-car-o d y)
+        (||| y 'o)))))
 
 (reason-defrel reason-null-o (x)
   (||| x '()))
