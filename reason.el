@@ -257,10 +257,12 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
 
 (ert-deftest reason-stream-test ()
   (let ((s1 '(a b c d))
-        (s2 `(e f ,(lambda () '(g h))))
+        (s2 `(e f . (lambda () '(g h))))
         (s3 (lambda () '(i j k l))))
     (reason-should-equal '(a b c d i j k l)
-      (reason-pull (reason-append s3 s1)))))
+      (reason-pull (reason-append s3 s1)))
+    (reason-should-equal '(e f g h)
+      (reason-take nil s2))))
 
 ;; goals
 
