@@ -648,6 +648,69 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* x
       (reason-pair-o x))))
 
+(reason-defrel reason-append-o (l p out)
+  (reason-conde
+   ((reason-null-o l) (||| p out))
+   ((reason-fresh (a d res)
+      (reason-car-o l a)
+      (reason-cdr-o l d)
+      (reason-append-o d p res)
+      (reason-cons-o a res out)))))
+
+(ert-deftest reason-test-append-o ()
+  (reason-should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
+    (reason-run 5 x
+      (reason-fresh (y z)
+        (reason-append-o x y z))))
+  (reason-should-equal '(_0 _0 _0 _0 _0)
+    (reason-run 5 y
+      (reason-fresh (x z)
+        (reason-append-o x y z))))
+  (reason-should-equal '(_0 (_0 . _1) (_0 _1 . _2) (_0 _1 _2 . _3) (_0 _1 _2 _3 . _4))
+    (reason-run 5 z
+      (reason-fresh (x y)
+        (reason-append-o x y z))))
+  (reason-should-equal '((cake tastes yummy))
+    (reason-run* x
+      (reason-append-o
+       '(cake)
+       '(tastes yummy)
+       x)))
+  (reason-should-equal '((cake with ice _0 tastes yummy))
+    (reason-run* x
+      (reason-fresh (y)
+        (reason-append-o
+         `(cake with ice ,y)
+         '(tastes yummy)
+         x))))
+  (reason-should-equal '((cake with ice cream . _0))
+    (reason-run* x
+      (reason-fresh (y)
+        (reason-append-o
+         '(cake with ice cream)
+         y
+         x))))
+  (reason-should-equal '((cake with ice d t)
+                   (cake with ice _0 d t)
+                   (cake with ice _0 _1 d t)
+                   (cake with ice _0 _1 _2 d t)
+                   (cake with ice _0 _1 _2 _3 d t))
+    (reason-run 5 x
+      (reason-fresh (y)
+        (reason-append-o `(cake with ice . ,y) '(d t) x))))
+  (reason-should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
+    (reason-run 5 y
+      (reason-fresh (x)
+        (reason-append-o `(cake with ice . ,y) '(d t) x))))
+  (reason-should-equal '((() (cake with ice d t))
+                   ((cake) (with ice d t))
+                   ((cake with) (ice d t))
+                   ((cake with ice) (d t))
+                   ((cake with ice d) (t))
+                   ((cake with ice d t) ()))
+    (reason-run 6 (x y)
+      (reason-append-o x y '(cake with ice d t)))))
+
 
 (provide 'reason)
 ;;; reason.el ends here
