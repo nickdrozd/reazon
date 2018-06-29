@@ -381,6 +381,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   `(reason-run nil ,q
      ,@goals))
 
+;; do all the goal lists get a conj, or just the first one?
 (defmacro reason-conde (&rest goal-lists)
   ""
   `(reason-disj ,@(mapcar (lambda (arm) `(reason-conj ,@arm)) goal-lists)))
