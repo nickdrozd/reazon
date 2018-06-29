@@ -423,6 +423,10 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
       (reason-fresh (x)
         (reason-fresh (y)
           (||| `(,x ,y) s)))))
+  (reason-should-equal '((_0 _1 _0))
+    (reason-run* s
+      (reason-fresh (x y)
+        (||| `(,x ,y ,x) s))))
   (reason-should-equal '((split pea))
     (reason-run* r
       (reason-fresh (x)
@@ -472,6 +476,11 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reason-run* x
       (reason--test-teacup-o x)
       (reason--test-teacup-o x)))
+  (reason-should-equal '((nil tea) (nil cup) (tea _0) (cup _0))
+    (reason-run* (x y)
+      (reason-disj-2
+       (reason-conj-2 (reason--test-teacup-o x) (reason--test-teacup-o x))
+       (reason-conj-2 (||| nil x) (reason--test-teacup-o y)))))
   (reason-should-equal '((t tea) (t cup) (tea _0) (cup _0))
     (reason-run* (x y)
       (reason-conde
