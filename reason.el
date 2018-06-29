@@ -250,7 +250,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (if (null s)
       nil
     (cons (car s)
-          (if (and n (zerop (1- n)))
+          (if (and n (= n 1))
               nil
             (reason-take (and n (1- n))
               (reason-pull (cdr s)))))))
