@@ -654,8 +654,8 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
    ((reason-null-o l) (||| p out))
    ((reason-fresh (a d res)
       (reason-cons-o a d l)
-      (reason-append-o d p res)
-      (reason-cons-o a res out)))))
+      (reason-cons-o a res out)
+      (reason-append-o d p res)))))
 
 (ert-deftest reason-test-append-o ()
   (reason-should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
@@ -709,6 +709,14 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
                    ((cake with ice d) (t))
                    ((cake with ice d t) ()))
     (reason-run 6 (x y)
+      (reason-append-o x y '(cake with ice d t))))
+  (reason-should-equal '((() (cake with ice d t))
+                   ((cake) (with ice d t))
+                   ((cake with) (ice d t))
+                   ((cake with ice) (d t))
+                   ((cake with ice d) (t))
+                   ((cake with ice d t) ()))
+    (reason-run* (x y)
       (reason-append-o x y '(cake with ice d t)))))
 
 
