@@ -653,8 +653,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (reason-conde
    ((reason-null-o l) (||| p out))
    ((reason-fresh (a d res)
-      (reason-car-o l a)
-      (reason-cdr-o l d)
+      (reason-cons-o a d l)
       (reason-append-o d p res)
       (reason-cons-o a res out)))))
 
