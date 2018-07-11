@@ -20,7 +20,15 @@
 
 ;;; Commentary:
 
-;;
+;; Reazon is an implmentation of the miniKanren language for Emacs. It
+;; provides an interface for writing an running relational programs.
+;; That interface consists of the following macros:
+
+;; * reazon-defrel
+;; * reazon-conde
+;; * reazon-fresh
+;; * reazon-run
+;; * reazon-run*
 
 ;;; Code:
 
