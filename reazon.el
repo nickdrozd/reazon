@@ -1,4 +1,4 @@
-;;; reason.el --- miniKanren implementation for Emacs  -*- lexical-binding: t; -*-
+;;; reazon.el --- miniKanren implementation for Emacs  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018  Nick Drozd
 
@@ -26,83 +26,83 @@
 
 ;; variables
 
-(defun reason-make-variable (name)
+(defun reazon-make-variable (name)
   "Create a unique variable from NAME."
   (vector name))
 
-(defun reason-variable-p (var)
+(defun reazon-variable-p (var)
   "Check whether VAR is a variable."
   (vector-or-char-table-p var))
 
 ;; substitutions
 
-(defun reason-walk (variable substitution)
+(defun reazon-walk (variable substitution)
   "Return the value associated with VARIABLE in
 SUBSTITUTION if there is one, else VARIABLE."
-  (let ((association (and (reason-variable-p variable)
+  (let ((association (and (reazon-variable-p variable)
                           (assoc variable substitution))))
     (cond
      ((consp association)
-      (reason-walk (cdr association) substitution))
+      (reazon-walk (cdr association) substitution))
      (t variable))))
 
-(defun reason-walk* (v s)
+(defun reazon-walk* (v s)
   ""
-  (let ((v (reason-walk v s)))
+  (let ((v (reazon-walk v s)))
     (cond
-     ((reason-variable-p v)
+     ((reazon-variable-p v)
       v)
      ((consp v)
       (cons
-       (reason-walk* (car v) s)
-       (reason-walk* (cdr v) s)))
+       (reazon-walk* (car v) s)
+       (reazon-walk* (cdr v) s)))
      (t
       v))))
 
-(defun reason-occurs-p (x v s)
+(defun reazon-occurs-p (x v s)
   ""
-  (let ((v (reason-walk v s)))
+  (let ((v (reazon-walk v s)))
     (cond
-     ((reason-variable-p v)
+     ((reazon-variable-p v)
       (equal v x))
      ((consp v)
-      (or (reason-occurs-p x (car v) s)
-          (reason-occurs-p x (cdr v) s)))
+      (or (reazon-occurs-p x (car v) s)
+          (reazon-occurs-p x (cdr v) s)))
      (t nil))))
 
-(defvar reason-false '!F "")
+(defvar reazon-false '!F "")
 
-(defun reason-extend (x v s)
+(defun reazon-extend (x v s)
   ""
-  (if (reason-occurs-p x v s)
-      reason-false
+  (if (reazon-occurs-p x v s)
+      reazon-false
     (cons `(,x . ,v) s)))
 
 ;; unification
 
-(defun reason-unify (u v s)
+(defun reazon-unify (u v s)
   ""
-  (let ((u (reason-walk u s))
-        (v (reason-walk v s)))
+  (let ((u (reazon-walk u s))
+        (v (reazon-walk v s)))
     (cond
      ((equal u v)
       s)
-     ((reason-variable-p u)
-      (reason-extend u v s))
-     ((reason-variable-p v)
-      (reason-extend v u s))
+     ((reazon-variable-p u)
+      (reazon-extend u v s))
+     ((reazon-variable-p v)
+      (reazon-extend v u s))
      ((and (consp u) (consp v))
-      (let ((s (reason-unify (car u) (car v) s)))
-        (if (equal s reason-false)
-            reason-false
-          (reason-unify (cdr u) (cdr v) s))))
-     (t reason-false))))
+      (let ((s (reazon-unify (car u) (car v) s)))
+        (if (equal s reazon-false)
+            reazon-false
+          (reazon-unify (cdr u) (cdr v) s))))
+     (t reazon-false))))
 
 (defun ||| (u v)
   ""
   (lambda (s)
-    (let ((s (reason-unify u v s)))
-      (if (equal s reason-false)
+    (let ((s (reazon-unify u v s)))
+      (if (equal s reazon-false)
           '()
         `(,s)))))
 
@@ -116,35 +116,35 @@ SUBSTITUTION if there is one, else VARIABLE."
 
 ;; reification
 
-(defun reason-reify-name (number)
+(defun reazon-reify-name (number)
   "Return the symbol '_$NUMBER."
   (intern (concat "_" (number-to-string number))))
 
-(defun reason-reify-s (v r)
+(defun reazon-reify-s (v r)
   ""
-  (let ((v (reason-walk v r)))
+  (let ((v (reazon-walk v r)))
     (cond
-     ((reason-variable-p v)
-      (let ((rn (reason-reify-name (length r))))
-        (reason-extend v rn r)))
+     ((reazon-variable-p v)
+      (let ((rn (reazon-reify-name (length r))))
+        (reazon-extend v rn r)))
      ((consp v)
-      (let ((r (reason-reify-s (car v) r)))
-        (reason-reify-s (cdr v) r)))
+      (let ((r (reazon-reify-s (car v) r)))
+        (reazon-reify-s (cdr v) r)))
      (t
       r))))
 
-(defun reason-reify (v)
+(defun reazon-reify (v)
   ""
   (lambda (s)
-    (let ((v (reason-walk* v s)))
-      (let ((r (reason-reify-s v '())))
-        (reason-walk* v r)))))
+    (let ((v (reazon-walk* v s)))
+      (let ((r (reazon-reify-s v '())))
+        (reazon-walk* v r)))))
 
-(defun reason-call/fresh (name f)
+(defun reazon-call/fresh (name f)
   "Returns a goal that has access to a variable created from NAME.
 f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
   (declare (indent 1))
-  (funcall f (reason-make-variable name)))
+  (funcall f (reazon-make-variable name)))
 
 ;; streams
 
@@ -155,22 +155,22 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
 ;;
 ;; The last of these is called a SUSPENSION.
 
-(defun reason-append (s1 s2)
+(defun reazon-append (s1 s2)
   ""
   (cond
    ((null s1) s2)
-   ((functionp s1) (lambda () (reason-append s2 (funcall s1))))
+   ((functionp s1) (lambda () (reazon-append s2 (funcall s1))))
    (t (cons (car s1)
-            (reason-append (cdr s1) s2)))))
+            (reazon-append (cdr s1) s2)))))
 
-(defun reason-pull (s)
+(defun reazon-pull (s)
   ""
   (cond
    ((null s) nil)
-   ((functionp s) (reason-pull (funcall s)))
+   ((functionp s) (reazon-pull (funcall s)))
    (t s)))
 
-(defun reason-take (n s)
+(defun reazon-take (n s)
   ""
   (declare (indent 1))
   (if (null s)
@@ -178,121 +178,121 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (cons (car s)
           (if (and n (= n 1))
               nil
-            (reason-take (and n (1- n))
-              (reason-pull (cdr s)))))))
+            (reazon-take (and n (1- n))
+              (reazon-pull (cdr s)))))))
 
 ;; goals
 
-(defun reason-disj-2 (g1 g2)
+(defun reazon-disj-2 (g1 g2)
   ""
   (lambda (s)
-    (reason-append (funcall g1 s) (funcall g2 s))))
+    (reazon-append (funcall g1 s) (funcall g2 s))))
 
-(defun reason-append-map (g s)
+(defun reazon-append-map (g s)
   ""
   (cond
    ((null s) nil)
-   ((functionp s) (lambda () (reason-append-map g (funcall s))))
-   (t (reason-append (funcall g (car s))
-               (reason-append-map g (cdr s))))))
+   ((functionp s) (lambda () (reazon-append-map g (funcall s))))
+   (t (reazon-append (funcall g (car s))
+               (reazon-append-map g (cdr s))))))
 
-(defun reason-conj-2 (g1 g2)
+(defun reazon-conj-2 (g1 g2)
   ""
   (lambda (s)
-    (reason-append-map g2 (funcall g1 s))))
+    (reazon-append-map g2 (funcall g1 s))))
 
-(defun reason-run-goal (g)
+(defun reazon-run-goal (g)
   ""
-  (reason-pull (funcall g nil)))
+  (reazon-pull (funcall g nil)))
 
 ;; macros
 
-(defmacro reason-disj (&rest goals)
+(defmacro reazon-disj (&rest goals)
   ""
   (pcase (length goals)
     (0 `!U)
     (1 (car goals))
-    (_ `(reason-disj-2 ,(car goals) (reason-disj ,@(cdr goals))))))
+    (_ `(reazon-disj-2 ,(car goals) (reazon-disj ,@(cdr goals))))))
 
-(defmacro reason-conj (&rest goals)
+(defmacro reazon-conj (&rest goals)
   ""
   (pcase (length goals)
     (0 `!S)
     (1 (car goals))
-    (_ `(reason-conj-2 ,(car goals) (reason-conj ,@(cdr goals))))))
+    (_ `(reazon-conj-2 ,(car goals) (reazon-conj ,@(cdr goals))))))
 
-(defmacro reason-fresh (vars &rest goals)
+(defmacro reazon-fresh (vars &rest goals)
   ""
   (declare (indent 1))
   (if (null vars)
-      `(reason-conj ,@goals)
+      `(reazon-conj ,@goals)
     (let ((var (car vars)))
-      `(reason-call/fresh (gensym)
+      `(reazon-call/fresh (gensym)
          (lambda (,var)
-           (reason-fresh ,(cdr vars)
+           (reazon-fresh ,(cdr vars)
              ,@goals))))))
 
-(defmacro reason-run (n var &rest goals)
+(defmacro reazon-run (n var &rest goals)
   ""
   (declare (indent 2))
   (if (listp var)
       (let ((q (gensym)))
-        `(reason-run ,n ,q
-           (reason-fresh ,var
+        `(reazon-run ,n ,q
+           (reazon-fresh ,var
              (||| (list ,@var) ,q)
              ,@goals)))
-    `(let ((,var (reason-make-variable ',var)))
+    `(let ((,var (reazon-make-variable ',var)))
        (mapcar
-        (reason-reify ,var)
-        (reason-take ,n
-          (reason-run-goal (reason-conj ,@goals)))))))
+        (reazon-reify ,var)
+        (reazon-take ,n
+          (reazon-run-goal (reazon-conj ,@goals)))))))
 
-(defmacro reason-run* (q &rest goals)
+(defmacro reazon-run* (q &rest goals)
   ""
   (declare (indent 1))
-  `(reason-run nil ,q
+  `(reazon-run nil ,q
      ,@goals))
 
 ;; do all the goal lists get a conj, or just the first one?
-(defmacro reason-conde (&rest goal-lists)
+(defmacro reazon-conde (&rest goal-lists)
   ""
-  `(reason-disj ,@(mapcar (lambda (arm) `(reason-conj ,@arm)) goal-lists)))
+  `(reazon-disj ,@(mapcar (lambda (arm) `(reazon-conj ,@arm)) goal-lists)))
 
-(defmacro reason-defrel (name varlist &rest goals)
+(defmacro reazon-defrel (name varlist &rest goals)
   ""
   (declare (indent 2))
   (let ((s (gensym)))
     `(defun ,name ,varlist
        (lambda (,s)
          (lambda ()
-           (funcall (reason-conj ,@goals) ,s))))))
+           (funcall (reazon-conj ,@goals) ,s))))))
 
-(reason-defrel reason-car-o (p a)
-  (reason-fresh (d)
-    (reason-cons-o a d p)))
+(reazon-defrel reazon-car-o (p a)
+  (reazon-fresh (d)
+    (reazon-cons-o a d p)))
 
-(reason-defrel reason-cdr-o (p d)
-  (reason-fresh (a)
-    (reason-cons-o a d p)))
+(reazon-defrel reazon-cdr-o (p d)
+  (reazon-fresh (a)
+    (reazon-cons-o a d p)))
 
-(reason-defrel reason-cons-o (a d p)
+(reazon-defrel reazon-cons-o (a d p)
   (||| p (cons a d)))
 
-(reason-defrel reason-null-o (x)
+(reazon-defrel reazon-null-o (x)
   (||| x '()))
 
-(reason-defrel reason-pair-o (p)
-  (reason-fresh (a d)
-    (reason-cons-o a d p)))
+(reazon-defrel reazon-pair-o (p)
+  (reazon-fresh (a d)
+    (reazon-cons-o a d p)))
 
-(reason-defrel reason-append-o (l p out)
-  (reason-conde
-   ((reason-null-o l) (||| p out))
-   ((reason-fresh (a d res)
-      (reason-cons-o a d l)
-      (reason-cons-o a res out)
-      (reason-append-o d p res)))))
+(reazon-defrel reazon-append-o (l p out)
+  (reazon-conde
+   ((reazon-null-o l) (||| p out))
+   ((reazon-fresh (a d res)
+      (reazon-cons-o a d l)
+      (reazon-cons-o a res out)
+      (reazon-append-o d p res)))))
 
 
-(provide 'reason)
-;;; reason.el ends here
+(provide 'reazon)
+;;; reazon.el ends here

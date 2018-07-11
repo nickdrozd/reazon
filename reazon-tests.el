@@ -1,4 +1,4 @@
-;;; reason-tests.el --- Tests for reason             -*- lexical-binding: t; -*-
+;;; reazon-tests.el --- Tests for reazon             -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018  Nick Drozd
 
@@ -19,450 +19,450 @@
 
 ;;; Code:
 
-(require 'reason)
+(require 'reazon)
 (require 'ert)
 
 ;; utilities
 
-(defmacro reason-with-variables (variables &rest body)
-  "Evaluate BODY with VARIABLES as reason-variables."
+(defmacro reazon-with-variables (variables &rest body)
+  "Evaluate BODY with VARIABLES as reazon-variables."
   (declare (indent 1))
-  (let ((reason-vars
+  (let ((reazon-vars
          (mapcar (lambda (var)
-                   `(,var (reason-make-variable ',var)))
+                   `(,var (reazon-make-variable ',var)))
                  variables)))
-    `(let (,@reason-vars)
+    `(let (,@reazon-vars)
        ,@body)))
 
-(defmacro reason-should-equal(expected form)
+(defmacro reazon-should-equal(expected form)
   "Assert that FORM evaluates equal to EXPECTED."
   (declare (indent 1))
   `(should (equal ,expected ,form)))
 
-(defmacro reason-should-not (&rest forms)
+(defmacro reazon-should-not (&rest forms)
   ""
   (let ((should-nots (mapcar (lambda (form)
-                               `(reason-should-equal ,form reason-false))
+                               `(reazon-should-equal ,form reazon-false))
                              forms)))
     `(progn ,@should-nots)))
 
 ;; variables
 
-(ert-deftest reason-variable-test ()
-  (should (reason-variable-p (reason-make-variable 'x)))
-  (should-not (reason-variable-p 'x))
-  (reason-with-variables (x y z)
-    (should (reason-variable-p x))
-    (should (reason-variable-p y))
-    (should (reason-variable-p z))))
+(ert-deftest reazon-variable-test ()
+  (should (reazon-variable-p (reazon-make-variable 'x)))
+  (should-not (reazon-variable-p 'x))
+  (reazon-with-variables (x y z)
+    (should (reazon-variable-p x))
+    (should (reazon-variable-p y))
+    (should (reazon-variable-p z))))
 
 ;; substitutions
 
-(ert-deftest reason-walk-test ()
-  (reason-with-variables (u v w x y z)
+(ert-deftest reazon-walk-test ()
+  (reazon-with-variables (u v w x y z)
     (let ((sub-1 `((,z . a) (,x . ,w) (,y . ,z)))
           (sub-2 `((,x . b) (,z . ,y) (,w . (,x e ,z)) (,u . ,w))))
-      (reason-should-equal 'a (reason-walk z sub-1))
-      (reason-should-equal 'a (reason-walk y sub-1))
-      (reason-should-equal w (reason-walk x sub-1))
-      (reason-should-equal w (reason-walk w sub-1))
-      (reason-should-equal 'b (reason-walk x sub-2))
-      (reason-should-equal `(,x e ,z) (reason-walk u sub-2))
-      (reason-should-equal `(b e ,y) (reason-walk* u sub-2)))))
+      (reazon-should-equal 'a (reazon-walk z sub-1))
+      (reazon-should-equal 'a (reazon-walk y sub-1))
+      (reazon-should-equal w (reazon-walk x sub-1))
+      (reazon-should-equal w (reazon-walk w sub-1))
+      (reazon-should-equal 'b (reazon-walk x sub-2))
+      (reazon-should-equal `(,x e ,z) (reazon-walk u sub-2))
+      (reazon-should-equal `(b e ,y) (reazon-walk* u sub-2)))))
 
-(ert-deftest reason-occurs-test ()
-  (reason-with-variables (x y)
-    (should (reason-occurs-p x x '()))
-    (should (reason-occurs-p x `(,y) `((,y . ,x))))))
+(ert-deftest reazon-occurs-test ()
+  (reazon-with-variables (x y)
+    (should (reazon-occurs-p x x '()))
+    (should (reazon-occurs-p x `(,y) `((,y . ,x))))))
 
-(ert-deftest reason-extend-test ()
-  (reason-with-variables (x y z)
-    (reason-should-not
-     (reason-extend x x '())
-     (reason-extend x `(,x) '())
-     (reason-extend x `(,y) `((,y . ,x))))
-    (reason-should-equal 'e
-      (reason-walk y (reason-extend x 'e `((,z . ,x) (,y . ,z)))))))
+(ert-deftest reazon-extend-test ()
+  (reazon-with-variables (x y z)
+    (reazon-should-not
+     (reazon-extend x x '())
+     (reazon-extend x `(,x) '())
+     (reazon-extend x `(,y) `((,y . ,x))))
+    (reazon-should-equal 'e
+      (reazon-walk y (reazon-extend x 'e `((,z . ,x) (,y . ,z)))))))
 
 ;; unification
 
-(ert-deftest reason-unification-test ()
-  (reason-should-equal '(())
+(ert-deftest reazon-unification-test ()
+  (reazon-should-equal '(())
     (funcall (||| 4 4) '()))
-  (reason-should-equal '(())
+  (reazon-should-equal '(())
     (!S '()))
-  (reason-should-equal '()
+  (reazon-should-equal '()
     (funcall (||| 4 5) '()))
-  (reason-should-equal '()
+  (reazon-should-equal '()
     (!U '())))
 
 ;; reification
 
-(ert-deftest reason-reify-test ()
-  (reason-with-variables (u v w x y z)
+(ert-deftest reazon-reify-test ()
+  (reazon-with-variables (u v w x y z)
     (let ((a1 `(,x . (,u ,w ,y ,z ((ice) ,z))))
           (a2 `(,y . corn))
           (a3 `(,w .(,v ,u))))
-      (reason-should-equal `(_0 (_1 _0) corn _2 ((ice) _2))
-        (funcall (reason-reify x) `(,a1 ,a2 ,a3))))))
+      (reazon-should-equal `(_0 (_1 _0) corn _2 ((ice) _2))
+        (funcall (reazon-reify x) `(,a1 ,a2 ,a3))))))
 
 ;; streams
 
-(ert-deftest reason-stream-test ()
+(ert-deftest reazon-stream-test ()
   (let ((s1 '(a b c d))
         (s2 `(e f . (lambda () '(g h))))
         (s3 (lambda () '(i j k l))))
-    (reason-should-equal '(a b c d i j k l)
-      (reason-pull (reason-append s3 s1)))
-    (reason-should-equal '(e f g h)
-      (reason-take nil s2))))
+    (reazon-should-equal '(a b c d i j k l)
+      (reazon-pull (reazon-append s3 s1)))
+    (reazon-should-equal '(e f g h)
+      (reazon-take nil s2))))
 
 ;; goals
 
-(ert-deftest reason-goal-test ()
-  (reason-with-variables (x)
-    (let* ((g (reason-disj-2 (||| 'olive x) (||| 'oil x)))
-           (s (reason-run-goal g))
-           (l (reason-take 5 s))
+(ert-deftest reazon-goal-test ()
+  (reazon-with-variables (x)
+    (let* ((g (reazon-disj-2 (||| 'olive x) (||| 'oil x)))
+           (s (reazon-run-goal g))
+           (l (reazon-take 5 s))
            (k (length l)))
-      (reason-should-equal k 2)
-      (reason-should-equal '(1 1)
+      (reazon-should-equal k 2)
+      (reazon-should-equal '(1 1)
         (mapcar #'length l))
-      (reason-should-equal '(olive oil)
-        (mapcar (reason-reify x) s))
-      (reason-should-equal l
-        (reason-take nil s)))))
+      (reazon-should-equal '(olive oil)
+        (mapcar (reazon-reify x) s))
+      (reazon-should-equal l
+        (reazon-take nil s)))))
 
-(defun reason--test-unproductive ()
+(defun reazon--test-unproductive ()
   ""
   (lambda (s)
     (lambda ()
-      (funcall (reason--test-unproductive) s))))
+      (funcall (reazon--test-unproductive) s))))
 
-(defun reason--test-productive ()
+(defun reazon--test-productive ()
   ""
   (lambda (s)
     (lambda ()
-      (funcall (reason-disj-2 #'!S (reason--test-productive)) s))))
+      (funcall (reazon-disj-2 #'!S (reazon--test-productive)) s))))
 
-(ert-deftest reason-productivity-test ()
-  (reason-with-variables (x)
-    (let ((s (funcall (reason-disj-2
+(ert-deftest reazon-productivity-test ()
+  (reazon-with-variables (x)
+    (let ((s (funcall (reazon-disj-2
                        (||| 'olive x)
-                       (reason--test-unproductive))
+                       (reazon--test-unproductive))
                       nil)))
-      (reason-should-equal `((,x . olive))
+      (reazon-should-equal `((,x . olive))
         (car s)))
-    (let ((s (funcall (reason-disj-2
-                       (reason--test-unproductive)
+    (let ((s (funcall (reazon-disj-2
+                       (reazon--test-unproductive)
                        (||| 'olive x))
                       nil)))
-      (reason-should-equal `((,x . olive))
+      (reazon-should-equal `((,x . olive))
         (car (funcall s)))
-      (reason-should-equal `((,x . olive))
-        (car (reason-pull s))))
-    (reason-should-equal '(() () ())
-      (reason-take 3 (reason-run-goal (reason--test-productive))))))
+      (reazon-should-equal `((,x . olive))
+        (car (reazon-pull s))))
+    (reazon-should-equal '(() () ())
+      (reazon-take 3 (reazon-run-goal (reazon--test-productive))))))
 
 ;; macros
 
-(ert-deftest reason-test-run-basic ()
-  (reason-should-equal '()
-    (reason-run* q #'!U))
-  (reason-should-equal '(t)
-    (reason-run* q (||| t q)))
-  (reason-should-equal '()
-    (reason-run* q #'!U (||| t q)))
-  (reason-should-equal '(t)
-    (reason-run* q #'!S (||| t q)))
-  (reason-should-equal '(corn)
-    (reason-run* r #'!S (||| 'corn r)))
-  (reason-should-equal '(olive oil)
-    (reason-run* x (reason-disj (||| 'olive x) (||| 'oil x))))
-  (reason-should-equal '(oil olive)
-    (reason-run* x (reason-disj (||| 'oil x) (||| 'olive x))))
-  (reason-should-equal '(oil)
-    (reason-run* x (reason-disj (reason-conj-2 (||| 'olive x) #'!U) (||| 'oil x))))
-  (reason-should-equal '(olive _0 oil)
-    (reason-run* x (reason-disj (reason-conj (||| 'virgin x) #'!U) (reason-disj (||| 'olive x) (reason-disj #'!S(||| 'oil x)))))))
+(ert-deftest reazon-test-run-basic ()
+  (reazon-should-equal '()
+    (reazon-run* q #'!U))
+  (reazon-should-equal '(t)
+    (reazon-run* q (||| t q)))
+  (reazon-should-equal '()
+    (reazon-run* q #'!U (||| t q)))
+  (reazon-should-equal '(t)
+    (reazon-run* q #'!S (||| t q)))
+  (reazon-should-equal '(corn)
+    (reazon-run* r #'!S (||| 'corn r)))
+  (reazon-should-equal '(olive oil)
+    (reazon-run* x (reazon-disj (||| 'olive x) (||| 'oil x))))
+  (reazon-should-equal '(oil olive)
+    (reazon-run* x (reazon-disj (||| 'oil x) (||| 'olive x))))
+  (reazon-should-equal '(oil)
+    (reazon-run* x (reazon-disj (reazon-conj-2 (||| 'olive x) #'!U) (||| 'oil x))))
+  (reazon-should-equal '(olive _0 oil)
+    (reazon-run* x (reazon-disj (reazon-conj (||| 'virgin x) #'!U) (reazon-disj (||| 'olive x) (reazon-disj #'!S(||| 'oil x)))))))
 
-(ert-deftest reason-test-fresh ()
-  (reason-should-equal '(t)
-    (reason-run* q
-      (reason-fresh (x)
+(ert-deftest reazon-test-fresh ()
+  (reazon-should-equal '(t)
+    (reazon-run* q
+      (reazon-fresh (x)
         (||| t x)
         (||| t q))))
-  (reason-should-equal '((_0 _1))
-    (reason-run* s
-      (reason-fresh (x)
-        (reason-fresh (y)
+  (reazon-should-equal '((_0 _1))
+    (reazon-run* s
+      (reazon-fresh (x)
+        (reazon-fresh (y)
           (||| `(,x ,y) s)))))
-  (reason-should-equal '((_0 _1 _0))
-    (reason-run* s
-      (reason-fresh (x y)
+  (reazon-should-equal '((_0 _1 _0))
+    (reazon-run* s
+      (reazon-fresh (x y)
         (||| `(,x ,y ,x) s))))
-  (reason-should-equal '((split pea))
-    (reason-run* r
-      (reason-fresh (x)
-        (reason-fresh (y)
+  (reazon-should-equal '((split pea))
+    (reazon-run* r
+      (reazon-fresh (x)
+        (reazon-fresh (y)
           (||| 'split x)
           (||| 'pea y)
           (||| `(,x ,y) r)))))
-  (reason-should-equal '((split pea))
-    (reason-run* r
-      (reason-fresh (x)
-        (reason-fresh (y)
+  (reazon-should-equal '((split pea))
+    (reazon-run* r
+      (reazon-fresh (x)
+        (reazon-fresh (y)
           (||| 'split x)
           (||| 'pea y)
           (||| `(,x ,y) r)))))
-  (reason-should-equal '((split pea))
-    (reason-run* r
-      (reason-fresh (x y)
+  (reazon-should-equal '((split pea))
+    (reazon-run* r
+      (reazon-fresh (x y)
         (||| 'split x)
         (||| 'pea y)
         (||| `(,x ,y) r))))
-  (reason-should-equal '((split pea))
-    (reason-run* (x y)
+  (reazon-should-equal '((split pea))
+    (reazon-run* (x y)
       (||| 'split x)
       (||| 'pea y)))
-  (reason-should-equal '(((split pea) split pea))
-    (reason-run* (r x y)
+  (reazon-should-equal '(((split pea) split pea))
+    (reazon-run* (r x y)
       (||| 'split x)
       (||| 'pea y)
       (||| `(,x ,y) r)))
-  (reason-should-equal '((_0 _1) (_0 _1))
-    (reason-run* (x y)
-      (reason-fresh (z)
-        (reason-conde
-         ((||| x z) (reason-fresh (z) (||| y z)))
-         ((reason-fresh (z) (||| x z)) (||| y z))))))
-  (reason-should-equal '((nil _0) (_0 nil))
-    (reason-run* (x y)
-      (reason-fresh (z)
-        (reason-conde
-         ((||| x z) (reason-fresh (z) (||| y z)))
-         ((reason-fresh (z) (||| x z)) (||| y z)))
+  (reazon-should-equal '((_0 _1) (_0 _1))
+    (reazon-run* (x y)
+      (reazon-fresh (z)
+        (reazon-conde
+         ((||| x z) (reazon-fresh (z) (||| y z)))
+         ((reazon-fresh (z) (||| x z)) (||| y z))))))
+  (reazon-should-equal '((nil _0) (_0 nil))
+    (reazon-run* (x y)
+      (reazon-fresh (z)
+        (reazon-conde
+         ((||| x z) (reazon-fresh (z) (||| y z)))
+         ((reazon-fresh (z) (||| x z)) (||| y z)))
         (||| nil z)))))
 
-(reason-defrel reason--test-teacup-o (x)
-  (reason-disj (||| x 'tea) (||| x 'cup)))
+(reazon-defrel reazon--test-teacup-o (x)
+  (reazon-disj (||| x 'tea) (||| x 'cup)))
 
-(ert-deftest reason-test-defrel ()
-  (reason-should-equal '(tea cup)
-    (reason-run* x (reason--test-teacup-o x)))
-  (reason-should-equal '((nil t) (tea t) (cup t))
-    (reason-run* (x y)
-      (reason-conde
-       ((reason--test-teacup-o x) (||| y t))
+(ert-deftest reazon-test-defrel ()
+  (reazon-should-equal '(tea cup)
+    (reazon-run* x (reazon--test-teacup-o x)))
+  (reazon-should-equal '((nil t) (tea t) (cup t))
+    (reazon-run* (x y)
+      (reazon-conde
+       ((reazon--test-teacup-o x) (||| y t))
        ((||| x nil) (||| y t)))))
-  (reason-should-equal '((tea tea) (tea cup) (cup tea) (cup cup))
-    (reason-run* (x y)
-      (reason--test-teacup-o x)
-      (reason--test-teacup-o y)))
-  (reason-should-equal '(tea cup)
-    (reason-run* x
-      (reason--test-teacup-o x)
-      (reason--test-teacup-o x)))
-  (reason-should-equal '((nil tea) (nil cup) (tea _0) (cup _0))
-    (reason-run* (x y)
-      (reason-disj-2
-       (reason-conj-2 (reason--test-teacup-o x) (reason--test-teacup-o x))
-       (reason-conj-2 (||| nil x) (reason--test-teacup-o y)))))
-  (reason-should-equal '((t tea) (t cup) (tea _0) (cup _0))
-    (reason-run* (x y)
-      (reason-conde
-       ((reason--test-teacup-o x) (reason--test-teacup-o x))
-       ((||| x t) (reason--test-teacup-o y))))))
+  (reazon-should-equal '((tea tea) (tea cup) (cup tea) (cup cup))
+    (reazon-run* (x y)
+      (reazon--test-teacup-o x)
+      (reazon--test-teacup-o y)))
+  (reazon-should-equal '(tea cup)
+    (reazon-run* x
+      (reazon--test-teacup-o x)
+      (reazon--test-teacup-o x)))
+  (reazon-should-equal '((nil tea) (nil cup) (tea _0) (cup _0))
+    (reazon-run* (x y)
+      (reazon-disj-2
+       (reazon-conj-2 (reazon--test-teacup-o x) (reazon--test-teacup-o x))
+       (reazon-conj-2 (||| nil x) (reazon--test-teacup-o y)))))
+  (reazon-should-equal '((t tea) (t cup) (tea _0) (cup _0))
+    (reazon-run* (x y)
+      (reazon-conde
+       ((reazon--test-teacup-o x) (reazon--test-teacup-o x))
+       ((||| x t) (reazon--test-teacup-o y))))))
 
-(ert-deftest reason-test-conde ()
-  (reason-should-equal '((split pea) (navy bean) (red lentil))
-    (reason-run* (x y)
-      (reason-conde
+(ert-deftest reazon-test-conde ()
+  (reazon-should-equal '((split pea) (navy bean) (red lentil))
+    (reazon-run* (x y)
+      (reazon-conde
        ((||| x 'split) (||| y 'pea))
        ((||| x 'navy) (||| y 'bean))
        ((||| x 'red) (||| y 'lentil)))))
-  (reason-should-equal '(oil)
-    (reason-run* x
-      (reason-conde
+  (reazon-should-equal '(oil)
+    (reazon-run* x
+      (reazon-conde
        ((||| x 'olive) #'!U)
        ((||| x 'oil))))))
 
-(ert-deftest reason-test-car-o ()
-  (reason-should-equal '(a)
-    (reason-run* p
-      (reason-car-o '(a c o r n) p)))
-  (reason-should-equal '(t)
-    (reason-run* q
-      (reason-car-o '(a c o r n) 'a)
+(ert-deftest reazon-test-car-o ()
+  (reazon-should-equal '(a)
+    (reazon-run* p
+      (reazon-car-o '(a c o r n) p)))
+  (reazon-should-equal '(t)
+    (reazon-run* q
+      (reazon-car-o '(a c o r n) 'a)
       (||| q t)))
-  (reason-should-equal '(pear)
-    (reason-run* r
-      (reason-fresh (x y)
-        (reason-car-o `(,r ,y) x)
+  (reazon-should-equal '(pear)
+    (reazon-run* r
+      (reazon-fresh (x y)
+        (reazon-car-o `(,r ,y) x)
         (||| x 'pear))))
-  (reason-should-equal '((grape a))
-    (reason-run* r
-      (reason-fresh (x y)
-        (reason-fresh (d) (||| (cons x d) '(grape raisin pear)))
-        (reason-fresh (d) (||| (cons y d) '((a) (b) (c))))
+  (reazon-should-equal '((grape a))
+    (reazon-run* r
+      (reazon-fresh (x y)
+        (reazon-fresh (d) (||| (cons x d) '(grape raisin pear)))
+        (reazon-fresh (d) (||| (cons y d) '((a) (b) (c))))
         (||| r (cons x y)))))
-  (reason-should-equal '((grape a))
-    (reason-run* r
-      (reason-fresh (x y)
-        (reason-car-o '(grape raisin pear) x)
-        (reason-car-o '((a) (b) (c)) y)
+  (reazon-should-equal '((grape a))
+    (reazon-run* r
+      (reazon-fresh (x y)
+        (reazon-car-o '(grape raisin pear) x)
+        (reazon-car-o '((a) (b) (c)) y)
         (||| r (cons x y))))))
 
-(ert-deftest reason-test-cdr-o ()
-  (reason-should-equal '(c)
-    (reason-run* r
-      (reason-fresh (v)
-        (reason-cdr-o '(a c o r n) v)
-        (reason-car-o v r))))
-  (reason-should-equal '(((raisin pear) a))
-    (reason-run* r
-      (reason-fresh (x y)
-        (reason-cdr-o '(grape raisin pear) x)
-        (reason-car-o '((a) (b) (c)) y)
+(ert-deftest reazon-test-cdr-o ()
+  (reazon-should-equal '(c)
+    (reazon-run* r
+      (reazon-fresh (v)
+        (reazon-cdr-o '(a c o r n) v)
+        (reazon-car-o v r))))
+  (reazon-should-equal '(((raisin pear) a))
+    (reazon-run* r
+      (reazon-fresh (x y)
+        (reazon-cdr-o '(grape raisin pear) x)
+        (reazon-car-o '((a) (b) (c)) y)
         (||| r (cons x y)))))
-  (reason-should-equal '(t)
-    (reason-run* q
-      (reason-cdr-o '(a c o r n) '(c o r n))
+  (reazon-should-equal '(t)
+    (reazon-run* q
+      (reazon-cdr-o '(a c o r n) '(c o r n))
       (||| q t)))
-  (reason-should-equal '(o)
-    (reason-run* x
-      (reason-cdr-o '(c o r n) `(,x r n))))
-  (reason-should-equal '((a c o r n))
-    (reason-run* l
-      (reason-fresh (x)
-        (reason-cdr-o l '(c o r n))
-        (reason-car-o l x)
+  (reazon-should-equal '(o)
+    (reazon-run* x
+      (reazon-cdr-o '(c o r n) `(,x r n))))
+  (reazon-should-equal '((a c o r n))
+    (reazon-run* l
+      (reazon-fresh (x)
+        (reazon-cdr-o l '(c o r n))
+        (reazon-car-o l x)
         (||| x 'a)))))
 
-(ert-deftest reason-test-cons-o ()
-  (reason-should-equal '(((a b c) d e f))
-    (reason-run* l
-      (reason-cons-o '(a b c) '(d e f) l)))
-  (reason-should-equal '(d)
-    (reason-run* x
-      (reason-cons-o x '(a b c) '(d a b c))))
-  (reason-should-equal '((e a d c ))
-    (reason-run* r
-      (reason-fresh (x y z)
+(ert-deftest reazon-test-cons-o ()
+  (reazon-should-equal '(((a b c) d e f))
+    (reazon-run* l
+      (reazon-cons-o '(a b c) '(d e f) l)))
+  (reazon-should-equal '(d)
+    (reazon-run* x
+      (reazon-cons-o x '(a b c) '(d a b c))))
+  (reazon-should-equal '((e a d c ))
+    (reazon-run* r
+      (reazon-fresh (x y z)
         (||| r `(e a d ,x))
-        (reason-cons-o y `(a ,z c) r))))
-  (reason-should-equal '((d a d c))
-    (reason-run* l
-      (reason-fresh (x)
+        (reazon-cons-o y `(a ,z c) r))))
+  (reazon-should-equal '((d a d c))
+    (reazon-run* l
+      (reazon-fresh (x)
         (||| l `(d a ,x c))
-        (reason-cons-o x `(a ,x c) l))))
-  (reason-should-equal '((d a d c))
-    (reason-run* l
-      (reason-fresh (x)
-        (reason-cons-o x `(a ,x c) l)
+        (reazon-cons-o x `(a ,x c) l))))
+  (reazon-should-equal '((d a d c))
+    (reazon-run* l
+      (reazon-fresh (x)
+        (reazon-cons-o x `(a ,x c) l)
         (||| l `(d a ,x c)))))
-  (reason-should-equal '((b o n u s))
-    (reason-run* l
-      (reason-fresh (d p x y w)
-        (reason-cons-o w '(n u s) p)
-        (reason-cdr-o l p)
-        (reason-car-o l x)
+  (reazon-should-equal '((b o n u s))
+    (reazon-run* l
+      (reazon-fresh (d p x y w)
+        (reazon-cons-o w '(n u s) p)
+        (reazon-cdr-o l p)
+        (reazon-car-o l x)
         (||| x 'b)
-        (reason-cdr-o l d)
-        (reason-car-o d y)
+        (reazon-cdr-o l d)
+        (reazon-car-o d y)
         (||| y 'o)))))
 
-(ert-deftest reason-test-null-o ()
-  (reason-should-equal '()
-    (reason-run* q
-      (reason-null-o '(grape raisin pear))
+(ert-deftest reazon-test-null-o ()
+  (reazon-should-equal '()
+    (reazon-run* q
+      (reazon-null-o '(grape raisin pear))
       (||| q t)))
-  (reason-should-equal '(t)
-    (reason-run* q
-      (reason-null-o '())
+  (reazon-should-equal '(t)
+    (reazon-run* q
+      (reazon-null-o '())
       (||| q t)))
-  (reason-should-equal '(())
-    (reason-run* x
-      (reason-null-o x))))
+  (reazon-should-equal '(())
+    (reazon-run* x
+      (reazon-null-o x))))
 
-(ert-deftest reason-test-pair-o ()
-  (reason-should-equal '(t)
-    (reason-run* q
-      (reason-pair-o (cons q q))
+(ert-deftest reazon-test-pair-o ()
+  (reazon-should-equal '(t)
+    (reazon-run* q
+      (reazon-pair-o (cons q q))
       (||| q t)))
-  (reason-should-equal '()
-    (reason-run* q
-      (reason-pair-o '())
+  (reazon-should-equal '()
+    (reazon-run* q
+      (reazon-pair-o '())
       (||| q t)))
-  (reason-should-equal '()
-    (reason-run* q
-      (reason-pair-o 'pair)
+  (reazon-should-equal '()
+    (reazon-run* q
+      (reazon-pair-o 'pair)
       (||| q t)))
-  (reason-should-equal '((_0 . _1))
-    (reason-run* x
-      (reason-pair-o x))))
+  (reazon-should-equal '((_0 . _1))
+    (reazon-run* x
+      (reazon-pair-o x))))
 
-(ert-deftest reason-test-append-o ()
-  (reason-should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
-    (reason-run 5 x
-      (reason-fresh (y z)
-        (reason-append-o x y z))))
-  (reason-should-equal '(_0 _0 _0 _0 _0)
-    (reason-run 5 y
-      (reason-fresh (x z)
-        (reason-append-o x y z))))
-  (reason-should-equal '(_0 (_0 . _1) (_0 _1 . _2) (_0 _1 _2 . _3) (_0 _1 _2 _3 . _4))
-    (reason-run 5 z
-      (reason-fresh (x y)
-        (reason-append-o x y z))))
-  (reason-should-equal '((cake tastes yummy))
-    (reason-run* x
-      (reason-append-o
+(ert-deftest reazon-test-append-o ()
+  (reazon-should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
+    (reazon-run 5 x
+      (reazon-fresh (y z)
+        (reazon-append-o x y z))))
+  (reazon-should-equal '(_0 _0 _0 _0 _0)
+    (reazon-run 5 y
+      (reazon-fresh (x z)
+        (reazon-append-o x y z))))
+  (reazon-should-equal '(_0 (_0 . _1) (_0 _1 . _2) (_0 _1 _2 . _3) (_0 _1 _2 _3 . _4))
+    (reazon-run 5 z
+      (reazon-fresh (x y)
+        (reazon-append-o x y z))))
+  (reazon-should-equal '((cake tastes yummy))
+    (reazon-run* x
+      (reazon-append-o
        '(cake)
        '(tastes yummy)
        x)))
-  (reason-should-equal '((cake with ice _0 tastes yummy))
-    (reason-run* x
-      (reason-fresh (y)
-        (reason-append-o
+  (reazon-should-equal '((cake with ice _0 tastes yummy))
+    (reazon-run* x
+      (reazon-fresh (y)
+        (reazon-append-o
          `(cake with ice ,y)
          '(tastes yummy)
          x))))
-  (reason-should-equal '((cake with ice cream . _0))
-    (reason-run* x
-      (reason-fresh (y)
-        (reason-append-o
+  (reazon-should-equal '((cake with ice cream . _0))
+    (reazon-run* x
+      (reazon-fresh (y)
+        (reazon-append-o
          '(cake with ice cream)
          y
          x))))
-  (reason-should-equal '((cake with ice d t)
+  (reazon-should-equal '((cake with ice d t)
                    (cake with ice _0 d t)
                    (cake with ice _0 _1 d t)
                    (cake with ice _0 _1 _2 d t)
                    (cake with ice _0 _1 _2 _3 d t))
-    (reason-run 5 x
-      (reason-fresh (y)
-        (reason-append-o `(cake with ice . ,y) '(d t) x))))
-  (reason-should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
-    (reason-run 5 y
-      (reason-fresh (x)
-        (reason-append-o `(cake with ice . ,y) '(d t) x))))
-  (reason-should-equal '((() (cake with ice d t))
+    (reazon-run 5 x
+      (reazon-fresh (y)
+        (reazon-append-o `(cake with ice . ,y) '(d t) x))))
+  (reazon-should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
+    (reazon-run 5 y
+      (reazon-fresh (x)
+        (reazon-append-o `(cake with ice . ,y) '(d t) x))))
+  (reazon-should-equal '((() (cake with ice d t))
                    ((cake) (with ice d t))
                    ((cake with) (ice d t))
                    ((cake with ice) (d t))
                    ((cake with ice d) (t))
                    ((cake with ice d t) ()))
-    (reason-run 6 (x y)
-      (reason-append-o x y '(cake with ice d t))))
-  (reason-should-equal '((() (cake with ice d t))
+    (reazon-run 6 (x y)
+      (reazon-append-o x y '(cake with ice d t))))
+  (reazon-should-equal '((() (cake with ice d t))
                    ((cake) (with ice d t))
                    ((cake with) (ice d t))
                    ((cake with ice) (d t))
                    ((cake with ice d) (t))
                    ((cake with ice d t) ()))
-    (reason-run* (x y)
-      (reason-append-o x y '(cake with ice d t)))))
+    (reazon-run* (x y)
+      (reazon-append-o x y '(cake with ice d t)))))
 
-(provide 'reason-tests)
-;;; reason-tests.el ends here
+(provide 'reazon-tests)
+;;; reazon-tests.el ends here
