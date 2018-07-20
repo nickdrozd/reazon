@@ -34,10 +34,14 @@
     `(let (,@reazon--vars)
        ,@body)))
 
-(defmacro reazon--should-equal(expected form)
-  "Assert that FORM evaluates equal to EXPECTED."
+(defmacro reazon--should-equal(expected &rest forms)
+  "Assert that each form in FORMS evaluates equal to EXPECTED."
   (declare (indent 1))
-  `(should (equal ,expected ,form)))
+  (let ((assertions
+         (mapcar
+          (lambda (form) `(should (equal ,expected ,form)))
+          forms)))
+    `(progn ,@assertions)))
 
 (defmacro reazon--should-not (&rest forms)
   ""
@@ -62,10 +66,12 @@
   (reazon--with-variables (u v w x y z)
     (let ((sub-1 `((,z . a) (,x . ,w) (,y . ,z)))
           (sub-2 `((,x . b) (,z . ,y) (,w . (,x e ,z)) (,u . ,w))))
-      (reazon--should-equal 'a (reazon--walk z sub-1))
-      (reazon--should-equal 'a (reazon--walk y sub-1))
-      (reazon--should-equal w (reazon--walk x sub-1))
-      (reazon--should-equal w (reazon--walk w sub-1))
+      (reazon--should-equal 'a
+        (reazon--walk z sub-1)
+        (reazon--walk y sub-1))
+      (reazon--should-equal w
+        (reazon--walk x sub-1)
+        (reazon--walk w sub-1))
       (reazon--should-equal 'b (reazon--walk x sub-2))
       (reazon--should-equal `(,x e ,z) (reazon--walk u sub-2))
       (reazon--should-equal `(b e ,y) (reazon--walk* u sub-2)))))
@@ -88,13 +94,11 @@
 
 (ert-deftest reazon--unification-test ()
   (reazon--should-equal '(())
+    (!S '())
     (funcall (||| 4 4) '()))
-  (reazon--should-equal '(())
-    (!S '()))
   (reazon--should-equal '()
-    (funcall (||| 4 5) '()))
-  (reazon--should-equal '()
-    (!U '())))
+    (!U '())
+    (funcall (||| 4 5) '())))
 
 ;; reification
 
@@ -207,21 +211,18 @@
         (reazon-fresh (y)
           (||| 'split x)
           (||| 'pea y)
-          (||| `(,x ,y) r)))))
-  (reazon--should-equal '((split pea))
+          (||| `(,x ,y) r))))
     (reazon-run* r
       (reazon-fresh (x)
         (reazon-fresh (y)
           (||| 'split x)
           (||| 'pea y)
-          (||| `(,x ,y) r)))))
-  (reazon--should-equal '((split pea))
+          (||| `(,x ,y) r))))
     (reazon-run* r
       (reazon-fresh (x y)
         (||| 'split x)
         (||| 'pea y)
-        (||| `(,x ,y) r))))
-  (reazon--should-equal '((split pea))
+        (||| `(,x ,y) r)))
     (reazon-run* (x y)
       (||| 'split x)
       (||| 'pea y)))
@@ -305,8 +306,7 @@
       (reazon-fresh (x y)
         (reazon-fresh (d) (||| (cons x d) '(grape raisin pear)))
         (reazon-fresh (d) (||| (cons y d) '((a) (b) (c))))
-        (||| r (cons x y)))))
-  (reazon--should-equal '((grape a))
+        (||| r (cons x y))))
     (reazon-run* r
       (reazon-fresh (x y)
         (reazon-car-o '(grape raisin pear) x)
@@ -355,8 +355,7 @@
     (reazon-run* l
       (reazon-fresh (x)
         (||| l `(d a ,x c))
-        (reazon-cons-o x `(a ,x c) l))))
-  (reazon--should-equal '((d a d c))
+        (reazon-cons-o x `(a ,x c) l)))
     (reazon-run* l
       (reazon-fresh (x)
         (reazon-cons-o x `(a ,x c) l)
@@ -393,8 +392,7 @@
   (reazon--should-equal '()
     (reazon-run* q
       (reazon-pair-o '())
-      (||| q t)))
-  (reazon--should-equal '()
+      (||| q t))
     (reazon-run* q
       (reazon-pair-o 'pair)
       (||| q t)))
@@ -454,13 +452,7 @@
                    ((cake with ice d) (t))
                    ((cake with ice d t) ()))
     (reazon-run 6 (x y)
-      (reazon-append-o x y '(cake with ice d t))))
-  (reazon--should-equal '((() (cake with ice d t))
-                   ((cake) (with ice d t))
-                   ((cake with) (ice d t))
-                   ((cake with ice) (d t))
-                   ((cake with ice d) (t))
-                   ((cake with ice d t) ()))
+      (reazon-append-o x y '(cake with ice d t)))
     (reazon-run* (x y)
       (reazon-append-o x y '(cake with ice d t)))))
 
