@@ -43,13 +43,6 @@
           forms)))
     `(progn ,@assertions)))
 
-(defmacro reazon--should-not (&rest forms)
-  ""
-  (let ((should-nots (mapcar (lambda (form)
-                               `(reazon--should-equal ,form reazon--false))
-                             forms)))
-    `(progn ,@should-nots)))
-
 ;; variables
 
 (ert-deftest reazon--variable-test ()
@@ -83,7 +76,7 @@
 
 (ert-deftest reazon--extend-test ()
   (reazon--with-variables (x y z)
-    (reazon--should-not
+    (reazon--should-equal reazon--false
      (reazon--extend x x '())
      (reazon--extend x `(,x) '())
      (reazon--extend x `(,y) `((,y . ,x))))
