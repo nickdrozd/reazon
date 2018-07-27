@@ -106,7 +106,7 @@ SUBSTITUTION if there is one, else VARIABLE."
           (reazon--unify (cdr u) (cdr v) s))))
      (t reazon--false))))
 
-(defun ||| (u v)
+(defun reazon-== (u v)
   ""
   (lambda (s)
     (let ((s (reazon--unify u v s)))
@@ -150,7 +150,7 @@ SUBSTITUTION if there is one, else VARIABLE."
 
 (defun reazon--call/fresh (name f)
   "Returns a goal that has access to a variable created from NAME.
-f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
+f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
   (declare (indent 1))
   (funcall f (reazon--make-variable name)))
 
@@ -247,7 +247,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
       (let ((q (gensym)))
         `(reazon-run ,n ,q
            (reazon-fresh ,var
-             (||| (list ,@var) ,q)
+             (reazon-== (list ,@var) ,q)
              ,@goals)))
     `(let ((,var (reazon--make-variable ',var)))
        (mapcar
@@ -284,10 +284,10 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
     (reazon-cons-o a d p)))
 
 (reazon-defrel reazon-cons-o (a d p)
-  (||| p (cons a d)))
+  (reazon-== p (cons a d)))
 
 (reazon-defrel reazon-null-o (x)
-  (||| x '()))
+  (reazon-== x '()))
 
 (reazon-defrel reazon-pair-o (p)
   (reazon-fresh (a d)
@@ -295,7 +295,7 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
 
 (reazon-defrel reazon-append-o (l p out)
   (reazon-conde
-   ((reazon-null-o l) (||| p out))
+   ((reazon-null-o l) (reazon-== p out))
    ((reazon-fresh (a d res)
       (reazon-cons-o a d l)
       (reazon-cons-o a res out)
