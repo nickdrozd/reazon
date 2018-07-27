@@ -301,6 +301,29 @@ f: variable -> goal, e.g. (lambda (fruit) (||| 'plum fruit))"
       (reazon-cons-o a res out)
       (reazon-append-o d p res)))))
 
+;; Bookkeeping
+
+(defvar reazon--public-prefix "reazon-")
+
+(defun reazon/install-aliases ()
+  "Bind alias \"blarg\" to \"reazon-blarg\" for every other public reazon callable.
+The implementation assumes that the Reazon namespace marker is the
+typical \"reazon-\". To avoid binding itself, this function is named
+with \"reazon/\"."
+  (interactive)
+  (mapatoms
+   (lambda (sym)
+     (let* ((public-prefix reazon--public-prefix)
+            (public-prefix-regexp (concat public-prefix "[^-]"))
+            (prefixed-name (symbol-name sym)))
+       (when (string-match public-prefix-regexp prefixed-name)
+         (reazon--defalias sym))))))
+
+(defun reazon--defalias (sym)
+  (let* ((base-name (string-remove-prefix reazon--public-prefix (symbol-name sym)))
+         (alias (intern base-name)))
+    (defalias alias sym)))
+
 
 (provide 'reazon)
 ;;; reazon.el ends here
