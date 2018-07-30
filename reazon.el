@@ -51,81 +51,80 @@
 
 ;; substitutions
 
-(defun reazon--walk (variable substitution)
-  "Return the value associated with VARIABLE in
-SUBSTITUTION if there is one, else VARIABLE."
-  (let ((association (and (reazon--variable-p variable)
-                          (assoc variable substitution))))
+(defun reazon--walk (var sub)
+  "Return the value associated with VAR in SUB if there is one, else VAR."
+  (let ((val (and (reazon--variable-p var)
+                  (assoc var sub))))
     (cond
-     ((consp association)
-      (reazon--walk (cdr association) substitution))
-     (t variable))))
+     ((consp val)
+      (reazon--walk (cdr val) sub))
+     (t var))))
 
-(defun reazon--walk* (v s)
+(defun reazon--walk* (var sub)
   ""
-  (let ((v (reazon--walk v s)))
+  (let ((var (reazon--walk var sub)))
     (cond
-     ((reazon--variable-p v)
-      v)
-     ((consp v)
+     ((reazon--variable-p var)
+      var)
+     ((consp var)
       (cons
-       (reazon--walk* (car v) s)
-       (reazon--walk* (cdr v) s)))
+       (reazon--walk* (car var) sub)
+       (reazon--walk* (cdr var) sub)))
      (t
-      v))))
+      var))))
 
-(defun reazon--occurs-p (x v s)
+(defun reazon--occurs-p (var val sub)
   ""
-  (let ((v (reazon--walk v s)))
+  (let ((val (reazon--walk val sub)))
     (cond
-     ((reazon--variable-p v)
-      (equal v x))
-     ((consp v)
-      (or (reazon--occurs-p x (car v) s)
-          (reazon--occurs-p x (cdr v) s)))
+     ((reazon--variable-p val)
+      (equal val var))
+     ((consp val)
+      (or (reazon--occurs-p var (car val) sub)
+          (reazon--occurs-p var (cdr val) sub)))
      (t nil))))
 
 (defvar reazon--false '!F "")
 
-(defun reazon--extend (x v s)
+(defun reazon--extend (var val sub)
   ""
-  (if (reazon--occurs-p x v s)
+  (if (reazon--occurs-p var val sub)
       reazon--false
-    (cons `(,x . ,v) s)))
+    (cons `(,var . ,val) sub)))
 
 ;; unification
 
-(defun reazon--unify (u v s)
+(defun reazon--unify (u v sub)
   ""
-  (let ((u (reazon--walk u s))
-        (v (reazon--walk v s)))
+  (let ((u (reazon--walk u sub))
+        (v (reazon--walk v sub)))
     (cond
      ((equal u v)
-      s)
+      sub)
      ((reazon--variable-p u)
-      (reazon--extend u v s))
+      (reazon--extend u v sub))
      ((reazon--variable-p v)
-      (reazon--extend v u s))
+      (reazon--extend v u sub))
      ((and (consp u) (consp v))
-      (let ((s (reazon--unify (car u) (car v) s)))
-        (if (equal s reazon--false)
+      (let ((sub (reazon--unify (car u) (car v) sub)))
+        (if (equal sub reazon--false)
             reazon--false
-          (reazon--unify (cdr u) (cdr v) s))))
+          (reazon--unify (cdr u) (cdr v) sub))))
      (t reazon--false))))
 
 (defun reazon-== (u v)
   ""
-  (lambda (s)
-    (let ((s (reazon--unify u v s)))
-      (if (equal s reazon--false)
+  (lambda (sub)
+    (let ((sub (reazon--unify u v sub)))
+      (if (equal sub reazon--false)
           '()
-        `(,s)))))
+        `(,sub)))))
 
-(defun reazon-!S (s)
+(defun reazon-!S (sub)
   ""
-  `(,s))
+  `(,sub))
 
-(defun reazon-!U (_s)
+(defun reazon-!U (_sub)
   ""
   '())
 
@@ -135,31 +134,31 @@ SUBSTITUTION if there is one, else VARIABLE."
   "Return the symbol '_$NUMBER."
   (intern (concat "_" (number-to-string number))))
 
-(defun reazon--reify-s (v r)
+(defun reazon--reify-sub (var sub)
   ""
-  (let ((v (reazon--walk v r)))
+  (let ((var (reazon--walk var sub)))
     (cond
-     ((reazon--variable-p v)
-      (let ((rn (reazon--reify-name (length r))))
-        (reazon--extend v rn r)))
-     ((consp v)
-      (let ((r (reazon--reify-s (car v) r)))
-        (reazon--reify-s (cdr v) r)))
+     ((reazon--variable-p var)
+      (let ((rn (reazon--reify-name (length sub))))
+        (reazon--extend var rn sub)))
+     ((consp var)
+      (let ((sub (reazon--reify-sub (car var) sub)))
+        (reazon--reify-sub (cdr var) sub)))
      (t
-      r))))
+      sub))))
 
-(defun reazon--reify (v)
+(defun reazon--reify (var)
   ""
-  (lambda (s)
-    (let ((v (reazon--walk* v s)))
-      (let ((r (reazon--reify-s v '())))
-        (reazon--walk* v r)))))
+  (lambda (sub)
+    (let ((var (reazon--walk* var sub)))
+      (let ((r (reazon--reify-sub var '())))
+        (reazon--walk* var r)))))
 
-(defun reazon--call-with-fresh (name f)
+(defun reazon--call-with-fresh (name function)
   "Returns a goal that has access to a variable created from NAME.
-f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
+function: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
   (declare (indent 1))
-  (funcall f (reazon--make-variable name)))
+  (funcall function (reazon--make-variable name)))
 
 ;; streams
 
@@ -178,47 +177,52 @@ f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
    (t (cons (car s1)
             (reazon--append (cdr s1) s2)))))
 
-(defun reazon--pull (s)
+(defun reazon--pull (stream)
   ""
   (cond
-   ((null s) nil)
-   ((functionp s) (reazon--pull (funcall s)))
-   (t s)))
+   ((null stream) nil)
+   ((functionp stream) (reazon--pull (funcall stream)))
+   (t stream)))
 
-(defun reazon--take (n s)
+(defun reazon--take (n stream)
   ""
   (declare (indent 1))
-  (if (null s)
+  (if (null stream)
       nil
-    (cons (car s)
+    (cons (car stream)
           (if (and n (= n 1))
               nil
             (reazon--take (and n (1- n))
-              (reazon--pull (cdr s)))))))
+              (reazon--pull (cdr stream)))))))
 
 ;; goals
 
-(defun reazon--disj-2 (g1 g2)
+(defun reazon--disj-2 (goal-1 goal-2)
   ""
-  (lambda (s)
-    (reazon--append (funcall g1 s) (funcall g2 s))))
+  (lambda (stream)
+    (reazon--append
+     (funcall goal-1 stream)
+     (funcall goal-2 stream))))
 
-(defun reazon--append-map (g s)
+(defun reazon--append-map (goal stream)
   ""
   (cond
-   ((null s) nil)
-   ((functionp s) (lambda () (reazon--append-map g (funcall s))))
-   (t (reazon--append (funcall g (car s))
-                (reazon--append-map g (cdr s))))))
+   ((null stream) nil)
+   ((functionp stream) (lambda () (reazon--append-map goal (funcall stream))))
+   (t (reazon--append
+       (funcall goal (car stream))
+       (reazon--append-map goal (cdr stream))))))
 
-(defun reazon--conj-2 (g1 g2)
+(defun reazon--conj-2 (goal-1 goal-2)
   ""
-  (lambda (s)
-    (reazon--append-map g2 (funcall g1 s))))
+  (lambda (stream)
+    (reazon--append-map
+     goal-2
+     (funcall goal-1 stream))))
 
-(defun reazon--run-goal (g)
+(defun reazon--run-goal (goal)
   ""
-  (reazon--pull (funcall g nil)))
+  (reazon--pull (funcall goal nil)))
 
 ;; macros
 
@@ -247,25 +251,27 @@ f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
            (reazon-fresh ,(cdr vars)
              ,@goals))))))
 
-(defmacro reazon-run (n var &rest goals)
+(defmacro reazon-run (n var/list &rest goals)
   ""
   (declare (indent 2))
-  (if (listp var)
-      (let ((q (gensym)))
+  (if (listp var/list)
+      (let ((vars var/list)
+            (q (gensym)))
         `(reazon-run ,n ,q
-           (reazon-fresh ,var
-             (reazon-== (list ,@var) ,q)
+           (reazon-fresh ,vars
+             (reazon-== (list ,@vars) ,q)
              ,@goals)))
-    `(let ((,var (reazon--make-variable ',var)))
-       (mapcar
-        (reazon--reify ,var)
-        (reazon--take ,n
-          (reazon--run-goal (reazon-conj ,@goals)))))))
+    (let ((var var/list))
+      `(let ((,var (reazon--make-variable ',var)))
+         (mapcar
+          (reazon--reify ,var)
+          (reazon--take ,n
+            (reazon--run-goal (reazon-conj ,@goals))))))))
 
-(defmacro reazon-run* (q &rest goals)
+(defmacro reazon-run* (query-var &rest goals)
   ""
   (declare (indent 1))
-  `(reazon-run nil ,q
+  `(reazon-run nil ,query-var
      ,@goals))
 
 ;; do all the goal lists get a conj, or just the first one?
@@ -276,11 +282,11 @@ f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
 (defmacro reazon-defrel (name varlist &rest goals)
   ""
   (declare (indent 2))
-  (let ((s (gensym)))
+  (let ((stream (gensym)))
     `(defun ,name ,varlist
-       (lambda (,s)
+       (lambda (,stream)
          (lambda ()
-           (funcall (reazon-conj ,@goals) ,s))))))
+           (funcall (reazon-conj ,@goals) ,stream))))))
 
 (reazon-defrel reazon-car-o (p a)
   (reazon-fresh (d)
