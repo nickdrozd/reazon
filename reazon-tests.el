@@ -77,9 +77,9 @@
 (ert-deftest reazon--extend-test ()
   (reazon--with-variables (x y z)
     (reazon--should-equal reazon--false
-     (reazon--extend x x '())
-     (reazon--extend x `(,x) '())
-     (reazon--extend x `(,y) `((,y . ,x))))
+      (reazon--extend x x '())
+      (reazon--extend x `(,x) '())
+      (reazon--extend x `(,y) `((,y . ,x))))
     (reazon--should-equal 'e
       (reazon--walk y (reazon--extend x 'e `((,z . ,x) (,y . ,z)))))))
 
@@ -87,10 +87,10 @@
 
 (ert-deftest reazon--unification-test ()
   (reazon--should-equal '(())
-    (!S '())
+    (reazon-!S '())
     (funcall (reazon-== 4 4) '()))
   (reazon--should-equal '()
-    (!U '())
+    (reazon-!U '())
     (funcall (reazon-== 4 5) '())))
 
 ;; reification
@@ -140,7 +140,7 @@
   ""
   (lambda (s)
     (lambda ()
-      (funcall (reazon--disj-2 #'!S (reazon--test-productive)) s))))
+      (funcall (reazon--disj-2 #'reazon-!S (reazon--test-productive)) s))))
 
 (ert-deftest reazon--productivity-test ()
   (reazon--with-variables (x)
@@ -165,23 +165,23 @@
 
 (ert-deftest reazon--test-run-basic ()
   (reazon--should-equal '()
-    (reazon-run* q #'!U))
+    (reazon-run* q #'reazon-!U))
   (reazon--should-equal '(t)
     (reazon-run* q (reazon-== t q)))
   (reazon--should-equal '()
-    (reazon-run* q #'!U (reazon-== t q)))
+    (reazon-run* q #'reazon-!U (reazon-== t q)))
   (reazon--should-equal '(t)
-    (reazon-run* q #'!S (reazon-== t q)))
+    (reazon-run* q #'reazon-!S (reazon-== t q)))
   (reazon--should-equal '(corn)
-    (reazon-run* r #'!S (reazon-== 'corn r)))
+    (reazon-run* r #'reazon-!S (reazon-== 'corn r)))
   (reazon--should-equal '(olive oil)
     (reazon-run* x (reazon-disj (reazon-== 'olive x) (reazon-== 'oil x))))
   (reazon--should-equal '(oil olive)
     (reazon-run* x (reazon-disj (reazon-== 'oil x) (reazon-== 'olive x))))
   (reazon--should-equal '(oil)
-    (reazon-run* x (reazon-disj (reazon--conj-2 (reazon-== 'olive x) #'!U) (reazon-== 'oil x))))
+    (reazon-run* x (reazon-disj (reazon--conj-2 (reazon-== 'olive x) #'reazon-!U) (reazon-== 'oil x))))
   (reazon--should-equal '(olive _0 oil)
-    (reazon-run* x (reazon-disj (reazon-conj (reazon-== 'virgin x) #'!U) (reazon-disj (reazon-== 'olive x) (reazon-disj #'!S(reazon-== 'oil x)))))))
+    (reazon-run* x (reazon-disj (reazon-conj (reazon-== 'virgin x) #'reazon-!U) (reazon-disj (reazon-== 'olive x) (reazon-disj #'reazon-!S (reazon-== 'oil x)))))))
 
 (ert-deftest reazon--test-fresh ()
   (reazon--should-equal '(t)
@@ -278,7 +278,7 @@
   (reazon--should-equal '(oil)
     (reazon-run* x
       (reazon-conde
-       ((reazon-== x 'olive) #'!U)
+       ((reazon-== x 'olive) #'reazon-!U)
        ((reazon-== x 'oil))))))
 
 (ert-deftest reazon--test-car-o ()

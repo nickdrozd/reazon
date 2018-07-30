@@ -3,6 +3,9 @@
 ;; Copyright (C) 2018  Nick Drozd
 
 ;; Author: Nick Drozd <nicholasdrozd@gmail.com>
+;; URL: https://github.com/nickdrozd/reazon
+;; Version: 0.1
+;; Package-Requires: ((emacs "24"))
 ;; Keywords: languages, extensions, lisp
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -31,6 +34,10 @@
 ;; * reazon-run*
 
 ;;; Code:
+
+(when (< emacs-major-version 26)
+  (require 'cl-lib)
+  (defalias 'gensym 'cl-gensym))
 
 ;; variables
 
@@ -114,11 +121,11 @@ SUBSTITUTION if there is one, else VARIABLE."
           '()
         `(,s)))))
 
-(defun !S (s)
+(defun reazon-!S (s)
   ""
   `(,s))
 
-(defun !U (_s)
+(defun reazon-!U (_s)
   ""
   '())
 
@@ -148,7 +155,7 @@ SUBSTITUTION if there is one, else VARIABLE."
       (let ((r (reazon--reify-s v '())))
         (reazon--walk* v r)))))
 
-(defun reazon--call/fresh (name f)
+(defun reazon--call-with-fresh (name f)
   "Returns a goal that has access to a variable created from NAME.
 f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
   (declare (indent 1))
@@ -202,7 +209,7 @@ f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
    ((null s) nil)
    ((functionp s) (lambda () (reazon--append-map g (funcall s))))
    (t (reazon--append (funcall g (car s))
-               (reazon--append-map g (cdr s))))))
+                (reazon--append-map g (cdr s))))))
 
 (defun reazon--conj-2 (g1 g2)
   ""
@@ -218,14 +225,14 @@ f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
 (defmacro reazon-disj (&rest goals)
   ""
   (pcase (length goals)
-    (0 `!U)
+    (0 `reazon-!U)
     (1 (car goals))
     (_ `(reazon--disj-2 ,(car goals) (reazon-disj ,@(cdr goals))))))
 
 (defmacro reazon-conj (&rest goals)
   ""
   (pcase (length goals)
-    (0 `!S)
+    (0 `reazon-!S)
     (1 (car goals))
     (_ `(reazon--conj-2 ,(car goals) (reazon-conj ,@(cdr goals))))))
 
@@ -235,7 +242,7 @@ f: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
   (if (null vars)
       `(reazon-conj ,@goals)
     (let ((var (car vars)))
-      `(reazon--call/fresh (gensym)
+      `(reazon--call-with-fresh (gensym)
          (lambda (,var)
            (reazon-fresh ,(cdr vars)
              ,@goals))))))
