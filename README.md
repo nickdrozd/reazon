@@ -52,7 +52,7 @@ corresponing to its output.
       (appendo d tail rec)))))
 ```
 
-Since the `appendo` relation strictly includes the `append** function,
+Since the `appendo` relation strictly includes the `append` function,
 it can be run with the same inputs to get the same outputs.
 
 **NB: Reazon _will not work_ without `lexical-binding`, so make sure
