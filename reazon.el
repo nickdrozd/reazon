@@ -291,6 +291,38 @@ function: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
            (reazon-fresh ,(cdr vars)
              ,@goals))))))
 
+(defmacro reazon-project (vars &rest goals)
+  "Run GOALS with the values associated with VARS lexically bound.
+This is an impure, non-relational operator, and its correct use
+depends on the ordering of clauses. For example,
+
+  (reazon-run* q
+    (reazon-fresh (x)
+      (reazon-== x 5)
+      (reazon-project (x)
+        (reazon-== q (* x x)))))
+
+succeeds with a value of '(25), while
+
+  (reazon-run* q
+    (reazon-fresh (x)
+      (reazon-project (x)
+        (reazon-== q (* x x)))
+      (reazon-== x 5)))
+
+raises an error. This is because in the second instance, the variable
+`x' is still fresh in the substitution, so the multiplication fails
+when applied to it."
+  (declare (indent 1))
+  (if (null vars)
+      `(reazon-conj ,@goals)
+    (let* ((stream (gensym))
+           (walked-vars
+            (mapcar (lambda (var) `(,var (reazon--walk* ,var ,stream))) vars)))
+      `(lambda (,stream)
+         (let ,walked-vars
+           (funcall (reazon-conj ,@goals) ,stream))))))
+
 (defmacro reazon-run (n var/list &rest goals)
   "Run GOALS against VAR/LIST for at most N values.
 If N is nil, run for as many values as possible. VAR/LIST can be

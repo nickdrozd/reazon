@@ -238,6 +238,20 @@
          ((reazon-fresh (z) (reazon-== x z)) (reazon-== y z)))
         (reazon-== nil z)))))
 
+(ert-deftest reazon--test-project ()
+  (reazon--should-equal '(25)
+    (reazon-run* q
+      (reazon-fresh (x)
+        (reazon-== x 5)
+        (reazon-project (x)
+          (reazon-== q (* x x))))))
+  (should-error
+   (reazon-run* q
+     (reazon-fresh (x)
+       (reazon-project (x)
+         (reazon-== q (* x x)))
+       (reazon-== x 5)))))
+
 (reazon-defrel reazon--test-teacup-o (x)
   (reazon-disj (reazon-== x 'tea) (reazon-== x 'cup)))
 
