@@ -66,23 +66,18 @@
   "Return the value associated with VAR in SUB if there is one, else VAR."
   (let ((val (and (reazon--variable-p var)
                   (assoc var sub))))
-    (cond
-     ((consp val)
-      (reazon--walk (cdr val) sub))
-     (t var))))
+    (if (consp val)
+        (reazon--walk (cdr val) sub)
+      var)))
 
 (defun reazon--walk* (var sub)
   "Return SUB with VAR replaced by its recursively walked value."
   (let ((var (reazon--walk var sub)))
-    (cond
-     ((reazon--variable-p var)
-      var)
-     ((consp var)
+    (if (not (consp var))
+        var
       (cons
        (reazon--walk* (car var) sub)
-       (reazon--walk* (cdr var) sub)))
-     (t
-      var))))
+       (reazon--walk* (cdr var) sub)))))
 
 (defun reazon--occurs-p (var val sub)
   "Return whether VAL is chain-associated with VAR in SUB."
@@ -216,10 +211,9 @@ STREAM-2, else append them as usual."
 
 (defun reazon--pull (stream)
   "Force STREAM and repull if it is a suspension, else just return it."
-  (cond
-   ((null stream) nil)
-   ((functionp stream) (reazon--pull (funcall stream)))
-   (t stream)))
+  (if (not (functionp stream))
+      stream
+    (reazon--pull (funcall stream))))
 
 (defun reazon--take (n stream)
   "Pull N values from STREAM if N is non-nil, else pull it without stopping."
