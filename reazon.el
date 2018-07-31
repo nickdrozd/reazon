@@ -95,7 +95,14 @@
           (reazon--occurs-p var (cdr val) sub)))
      (t nil))))
 
-(defvar reazon--false '!F "")
+(defconst reazon--false (gensym)
+  "A symbol to indicate substitution failure.
+In The Reasoned Schemer, several substitution-handling functions
+return #f (false) in certain circumstances instead of a substitution
+to indicate that the operation failed. In Emacs, false is nil, which
+is also the empty list, which happens to be a substitution. To avoid
+confusing these functions, we pick an arbitrary dummy symbol to
+indicate substitution failure.")
 
 (defun reazon--extend (var val sub)
   "Associate VAR and VAL in SUB."
