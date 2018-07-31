@@ -72,22 +72,22 @@
 
 (defun reazon--walk* (var sub)
   "Return SUB with VAR replaced by its recursively walked value."
-  (let ((var (reazon--walk var sub)))
-    (if (not (consp var))
-        var
+  (let ((walked (reazon--walk var sub)))
+    (if (not (consp walked))
+        walked
       (cons
-       (reazon--walk* (car var) sub)
-       (reazon--walk* (cdr var) sub)))))
+       (reazon--walk* (car walked) sub)
+       (reazon--walk* (cdr walked) sub)))))
 
 (defun reazon--occurs-p (var val sub)
   "Return whether VAL is chain-associated with VAR in SUB."
-  (let ((val (reazon--walk val sub)))
+  (let ((walked (reazon--walk val sub)))
     (cond
-     ((reazon--variable-p val)
-      (equal val var))
-     ((consp val)
-      (or (reazon--occurs-p var (car val) sub)
-          (reazon--occurs-p var (cdr val) sub)))
+     ((reazon--variable-p walked)
+      (equal walked var))
+     ((consp walked)
+      (or (reazon--occurs-p var (car walked) sub)
+          (reazon--occurs-p var (cdr walked) sub)))
      (t nil))))
 
 (defconst reazon--false (gensym)
@@ -107,24 +107,25 @@ indicate substitution failure.")
 
 (defun reazon--unify (u v sub)
   "Attempt to extend SUB with recursive associations between U and V."
-  (let ((u (reazon--walk u sub))
-        (v (reazon--walk v sub)))
+  (let ((u-walked (reazon--walk u sub))
+        (v-walked (reazon--walk v sub)))
     (cond
-     ((equal u v)
+     ((equal u-walked v-walked)
       ;; The vars are already associated, so do nothing.
       sub)
-     ((reazon--variable-p u)
-      ;; u is fresh, so associate it with v.
-      (reazon--extend u v sub))
-     ((reazon--variable-p v)
-      ;; v is fresh and u is not, so associate v with u.
-      (reazon--extend v u sub))
-     ((and (consp u) (consp v))
+     ((reazon--variable-p u-walked)
+      ;; u-walked is fresh, so associate it with v-walked.
+      (reazon--extend u-walked v-walked sub))
+     ((reazon--variable-p v-walked)
+      ;; v-walked is fresh and u-walked is not, so associate v-walked
+      ;; with u-walked.
+      (reazon--extend v-walked u-walked sub))
+     ((and (consp u-walked) (consp v-walked))
       ;; Destructure the vars and attempts to recursively unify them.
-      (let ((sub (reazon--unify (car u) (car v) sub)))
+      (let ((sub (reazon--unify (car u-walked) (car v-walked) sub)))
         (if (equal sub reazon--false)
             reazon--false
-          (reazon--unify (cdr u) (cdr v) sub))))
+          (reazon--unify (cdr u-walked) (cdr v-walked) sub))))
      (t
       ;; Unification failed.
       reazon--false))))
@@ -177,10 +178,10 @@ resulting substitution, else return the empty stream.
 
 This primitive goal succeeds if U and V can be unified."
   (lambda (sub)
-    (let ((sub (reazon--unify u v sub)))
-      (if (equal sub reazon--false)
+    (let ((unified (reazon--unify u v sub)))
+      (if (equal unified reazon--false)
           '()
-        `(,sub)))))
+        `(,unified)))))
 
 (defun reazon-!S (sub)
   "Return a stream containing SUB.
@@ -233,14 +234,14 @@ This primitive goal succeeds if they both do."
 
 (defun reazon--reify-sub (var sub)
   "Replace VAR in SUB with its reified name."
-  (let ((var (reazon--walk var sub)))
+  (let ((walked (reazon--walk var sub)))
     (cond
-     ((reazon--variable-p var)
-      (let ((rn (reazon--reify-name (length sub))))
-        (reazon--extend var rn sub)))
-     ((consp var)
-      (let ((sub (reazon--reify-sub (car var) sub)))
-        (reazon--reify-sub (cdr var) sub)))
+     ((reazon--variable-p walked)
+      (let ((name (reazon--reify-name (length sub))))
+        (reazon--extend walked name sub)))
+     ((consp walked)
+      (let ((sub (reazon--reify-sub (car walked) sub)))
+        (reazon--reify-sub (cdr walked) sub)))
      (t
       sub))))
 
@@ -248,9 +249,9 @@ This primitive goal succeeds if they both do."
   "Return a function that takes a substitution and reifies VAR therein.
 This is the reification entrypoint."
   (lambda (sub)
-    (let ((var (reazon--walk* var sub)))
-      (let ((r (reazon--reify-sub var '())))
-        (reazon--walk* var r)))))
+    (let* ((walked-var (reazon--walk* var sub))
+           (reified-sub (reazon--reify-sub walked-var '())))
+      (reazon--walk* walked-var reified-sub))))
 
 (defun reazon--call-with-fresh (name function)
   "Call FUNCTION with a variable created from NAME.
