@@ -105,8 +105,6 @@ indicate substitution failure.")
       reazon--false
     (cons `(,var . ,val) sub)))
 
-;; -- Unification --
-
 (defun reazon--unify (u v sub)
   "Attempt to extend SUB with recursive associations between U and V."
   (let ((u (reazon--walk u sub))
@@ -130,65 +128,6 @@ indicate substitution failure.")
      (t
       ;; Unification failed.
       reazon--false))))
-
-(defun reazon-== (u v)
-  "Attempt to unify U and V in the provided substitution.
-If unification succeeds, return a stream containing the
-resulting substitution, else return the empty stream.
-
-This primitive goal succeeds if U and V can be unified."
-  (lambda (sub)
-    (let ((sub (reazon--unify u v sub)))
-      (if (equal sub reazon--false)
-          '()
-        `(,sub)))))
-
-(defun reazon-!S (sub)
-  "Return a stream containing SUB.
-This primitive goal always succeeds."
-  `(,sub))
-
-(defun reazon-!U (_sub)
-  "Return the empty stream.
-This primitive goal always fails."
-  '())
-
-;; -- Reification --
-
-;; A REIFIED NAME is a concrete identifier assigned to a fresh
-;; variable when values are presented.
-
-(defun reazon--reify-name (number)
-  "Return the symbol '_$NUMBER."
-  ;; Should this use `make-symbol' instead of `intern'?
-  (intern (concat "_" (number-to-string number))))
-
-(defun reazon--reify-sub (var sub)
-  "Replace VAR in SUB with its reified name."
-  (let ((var (reazon--walk var sub)))
-    (cond
-     ((reazon--variable-p var)
-      (let ((rn (reazon--reify-name (length sub))))
-        (reazon--extend var rn sub)))
-     ((consp var)
-      (let ((sub (reazon--reify-sub (car var) sub)))
-        (reazon--reify-sub (cdr var) sub)))
-     (t
-      sub))))
-
-(defun reazon--reify (var)
-  "Return a function that takes a substitution and reifies VAR therein.
-This is the reification entrypoint."
-  (lambda (sub)
-    (let ((var (reazon--walk* var sub)))
-      (let ((r (reazon--reify-sub var '())))
-        (reazon--walk* var r)))))
-
-(defun reazon--call-with-fresh (name function)
-  "Call FUNCTION with a variable created from NAME.
-function: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
-  (declare (indent 1))
-  (funcall function (reazon--make-variable name)))
 
 ;; -- Streams --
 
@@ -231,6 +170,28 @@ STREAM-2, else append them as usual."
 ;; A GOAL is a function that takes a substitution and returns a stream
 ;; of substitutions.
 
+(defun reazon-== (u v)
+  "Attempt to unify U and V in the provided substitution.
+If unification succeeds, return a stream containing the
+resulting substitution, else return the empty stream.
+
+This primitive goal succeeds if U and V can be unified."
+  (lambda (sub)
+    (let ((sub (reazon--unify u v sub)))
+      (if (equal sub reazon--false)
+          '()
+        `(,sub)))))
+
+(defun reazon-!S (sub)
+  "Return a stream containing SUB.
+This primitive goal always succeeds."
+  `(,sub))
+
+(defun reazon-!U (_sub)
+  "Return the empty stream.
+This primitive goal always fails."
+  '())
+
 (defun reazon--disj-2 (goal-1 goal-2)
   "Join GOAL-1 and GOAL-2 into a new goal containing them both.
 This primitive goal succeeds if either of them do."
@@ -259,6 +220,43 @@ This primitive goal succeeds if they both do."
 (defun reazon--run-goal (goal)
   "Pull GOAL with the empty stream."
   (reazon--pull (funcall goal nil)))
+
+;; -- Reification --
+
+;; A REIFIED NAME is a concrete identifier assigned to a fresh
+;; variable when values are presented.
+
+(defun reazon--reify-name (number)
+  "Return the symbol '_$NUMBER."
+  ;; Should this use `make-symbol' instead of `intern'?
+  (intern (concat "_" (number-to-string number))))
+
+(defun reazon--reify-sub (var sub)
+  "Replace VAR in SUB with its reified name."
+  (let ((var (reazon--walk var sub)))
+    (cond
+     ((reazon--variable-p var)
+      (let ((rn (reazon--reify-name (length sub))))
+        (reazon--extend var rn sub)))
+     ((consp var)
+      (let ((sub (reazon--reify-sub (car var) sub)))
+        (reazon--reify-sub (cdr var) sub)))
+     (t
+      sub))))
+
+(defun reazon--reify (var)
+  "Return a function that takes a substitution and reifies VAR therein.
+This is the reification entrypoint."
+  (lambda (sub)
+    (let ((var (reazon--walk* var sub)))
+      (let ((r (reazon--reify-sub var '())))
+        (reazon--walk* var r)))))
+
+(defun reazon--call-with-fresh (name function)
+  "Call FUNCTION with a variable created from NAME.
+function: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
+  (declare (indent 1))
+  (funcall function (reazon--make-variable name)))
 
 ;; -- Macros --
 
