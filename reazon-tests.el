@@ -1,4 +1,4 @@
-;;; reazon--tests.el --- Tests for reazon             -*- lexical-binding: t; -*-
+;;; reazon-tests.el --- Tests for reazon             -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2018  Nick Drozd
 
@@ -17,12 +17,21 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
+;;; Commentary:
+
+;; Tests that use reazon-run(*) are the ultimate arbiter of truth.
+;; Call such tests "integration tests" and others "unit tests". Unit
+;; tests can be rewritten freely as the implementation changes, but
+;; integration tests should not be altered unless the API is
+;; deliberately being changed (or, obviously, if bugs are fixed).
+
 ;;; Code:
 
 (require 'reazon)
 (require 'ert)
 
-;; utilities
+;; Utilities
 
 (defmacro reazon--with-variables (variables &rest body)
   "Evaluate BODY with VARIABLES as reazon--variables."
@@ -35,7 +44,7 @@
        ,@body)))
 
 (defmacro reazon--should-equal(expected &rest forms)
-  "Assert that each form in FORMS evaluates equal to EXPECTED."
+  "Assert that each form in FORMS equals EXPECTED."
   (declare (indent 1))
   (let ((assertions
          (mapcar
@@ -43,7 +52,7 @@
           forms)))
     `(progn ,@assertions)))
 
-;; variables
+;; Internal functions
 
 (ert-deftest reazon--variable-test ()
   (should (reazon--variable-p (reazon--make-variable 'x)))
@@ -53,10 +62,8 @@
     (should (reazon--variable-p y))
     (should (reazon--variable-p z))))
 
-;; substitutions
-
 (ert-deftest reazon--walk-test ()
-  (reazon--with-variables (u v w x y z)
+  (reazon--with-variables (u w x y z)
     (let ((sub-1 `((,z . a) (,x . ,w) (,y . ,z)))
           (sub-2 `((,x . b) (,z . ,y) (,w . (,x e ,z)) (,u . ,w))))
       (reazon--should-equal 'a
@@ -83,8 +90,6 @@
     (reazon--should-equal 'e
       (reazon--walk y (reazon--extend x 'e `((,z . ,x) (,y . ,z)))))))
 
-;; unification
-
 (ert-deftest reazon--unification-test ()
   (reazon--should-equal '(())
     (reazon-!S '())
@@ -92,8 +97,6 @@
   (reazon--should-equal '()
     (reazon-!U '())
     (funcall (reazon-== 4 5) '())))
-
-;; reification
 
 (ert-deftest reazon--reify-test ()
   (reazon--with-variables (u v w x y z)
@@ -103,8 +106,6 @@
       (reazon--should-equal `(_0 (_1 _0) corn _2 ((ice) _2))
         (funcall (reazon--reify x) `(,a1 ,a2 ,a3))))))
 
-;; streams
-
 (ert-deftest reazon--stream-test ()
   (let ((s1 '(a b c d))
         (s2 `(e f . (lambda () '(g h))))
@@ -113,8 +114,6 @@
       (reazon--pull (reazon--append s3 s1)))
     (reazon--should-equal '(e f g h)
       (reazon--take nil s2))))
-
-;; goals
 
 (ert-deftest reazon--goal-test ()
   (reazon--with-variables (x)
@@ -131,13 +130,13 @@
         (reazon--take nil s)))))
 
 (defun reazon--test-unproductive ()
-  ""
+  "Produce nothing...forever."
   (lambda (s)
     (lambda ()
       (funcall (reazon--test-unproductive) s))))
 
 (defun reazon--test-productive ()
-  ""
+  "Produce something...forever."
   (lambda (s)
     (lambda ()
       (funcall (reazon--disj-2 #'reazon-!S (reazon--test-productive)) s))))
@@ -161,7 +160,7 @@
     (reazon--should-equal '(() () ())
       (reazon--take 3 (reazon--run-goal (reazon--test-productive))))))
 
-;; macros
+;; Macros
 
 (ert-deftest reazon--test-run-basic ()
   (reazon--should-equal '()
@@ -463,5 +462,6 @@
     (reazon-run* (x y)
       (reazon-append-o x y '(cake with ice d t)))))
 
-(provide 'reazon--tests)
-;;; reazon--tests.el ends here
+
+(provide 'reazon-tests)
+;;; reazon-tests.el ends here
