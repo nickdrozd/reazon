@@ -145,7 +145,16 @@ If STREAM-1 is a suspsension, force it and append the result to
 STREAM-2, else append them as usual."
   (cond
    ((null stream-1) stream-2)
-   ((functionp stream-1) (lambda () (reazon--append stream-2 (funcall stream-1))))
+   ((functionp stream-1)
+    ;; In the recursive call, STREAM-1 is forced and swapped with
+    ;; STREAM-2. This swap is critical; without it, the search would
+    ;; be depth-first and incomplete, whereas with it the search is
+    ;; complete. See "microKanren: A Lucid Little Logic Language with
+    ;; a Simple Complete Search".
+    (lambda ()
+      (reazon--append
+       stream-2
+       (funcall stream-1))))
    (t (cons (car stream-1)
             (reazon--append (cdr stream-1) stream-2)))))
 
