@@ -487,6 +487,34 @@
     (reazon-run 3 q
       (reazon-lot-o `((g g) . ,q)))))
 
+(ert-deftest reazon--test-member-o ()
+  (reazon--should-equal '(e)
+    (reazon-run* x
+      (reazon-member-o 'e `(pasta ,x fagioli))))
+  (reazon--should-equal '((e _0) (_0 e))
+    (reazon-run* (x y)
+      (reazon-member-o 'e `(pasta ,x fagioli ,y))))
+  (reazon--should-equal '((pasta e fagioli _0) (pasta _0 fagioli e))
+    (reazon-run* q
+      (reazon-fresh (x y)
+        (reazon-== q `(pasta ,x fagioli ,y))
+        (reazon-member-o 'e q))))
+  (reazon--should-equal '((tofu . _0) (_0 tofu . _1) (_0 _1 tofu . _2))
+    (reazon-run 3 s
+      (reazon-member-o 'tofu s))))
+
+(ert-deftest reazon--test-proper-member-o ()
+  ;; The ordering here is different from what's in the book.
+  (reazon--should-equal '((tofu) (tofu _0) (_0 tofu) (tofu _0 _1)
+                          (tofu _0 _1 _2) (_0 tofu _1)
+                          (tofu _0 _1 _2 _3)
+                          (tofu _0 _1 _2 _3 _4)
+                          (_0 _1 tofu) (_0 tofu _1 _2)
+                          (tofu _0 _1 _2 _3 _4 _5)
+                          (tofu _0 _1 _2 _3 _4 _5 _6))
+    (reazon-run 12 s
+      (reazon-proper-member-o 'tofu s))))
+
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here
