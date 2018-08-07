@@ -476,6 +476,17 @@
     (reazon-run 5 q
       (reazon-lol-o `((a b) (c d) . ,q)))))
 
+(ert-deftest reazon--test-twin-o ()
+  (reazon--should-equal '(tofu)
+    (reazon-run* q (reazon-twin-o `(,q tofu)))))
+
+(ert-deftest reazon--test-lot-o ()
+  (reazon--should-equal '(nil ((_0 _0)) ((_0 _0) (_1 _1)))
+    (reazon-run 3 q
+      (reazon-lot-o q))
+    (reazon-run 3 q
+      (reazon-lot-o `((g g) . ,q)))))
+
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here
