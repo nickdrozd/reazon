@@ -532,6 +532,38 @@
     (reazon-run 9 (x y)
       (reazon-mem-o 'tofu `(a b tofu d tofu e . ,y) x))))
 
+(ert-deftest reazon--test-rember-o ()
+  ;; These tests confirm some behavior that seems pathological. If all
+  ;; the other tests pass and these ones don't, that might be good.
+  (reazon--should-equal '((a b d peas e))
+    (reazon-run 1 out
+      (reazon-fresh (y)
+        (reazon-rember-o 'peas `(a b ,y d peas e) out))))
+  (reazon--should-equal '((b a d _0 e) (a b d _0 e) (a b d _0 e)
+                          (a b d _0 e) (a b _0 d e)
+                          (a b e d _0) (a b _0 d _1 e))
+    (reazon-run* out
+      (reazon-fresh (y z)
+        (reazon-rember-o y `(a b ,y d ,z e) out))))
+  (reazon--should-equal '(_0 _0 _0 _0 _0
+                             nil (_0 . _1) (_0)
+                             (_0 _1 . _2) (_0 _1)
+                             (_0 _1 _2 . _3))
+    (reazon-run 11 w
+      (reazon-fresh (y z out)
+        (reazon-rember-o y `(a b ,y d ,z . ,w) out))))
+  (reazon--should-equal '((peas a peas c) (a peas peas c) (a peas peas c)
+                          (a peas c) (a peas c peas))
+    (reazon-run* q
+      (reazon-rember-o 'peas q `(a peas c))))
+  (reazon--should-equal '(b)
+    (reazon-run* r
+      (reazon-rember-o r '(a b c) '(a b c))
+      (reazon-== r 'b))
+    (reazon-run* r
+      (reazon-== r 'b)
+      (reazon-rember-o r '(a b c) '(a b c)))))
+
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here

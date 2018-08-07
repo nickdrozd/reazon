@@ -453,6 +453,15 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cdr-o s d)
       (reazon-mem-o x d out)))))
 
+(reazon-defrel reazon-rember-o (x s out)
+  (reazon-conde
+   ((reazon-null-o s) (reazon-null-o out))
+   ((reazon-car-o s x) (reazon-cdr-o s out))
+   ((reazon-fresh (a d rec)
+      (reazon-cons-o a d s)
+      (reazon-cons-o a rec out)
+      (reazon-rember-o x d rec)))))
+
 
 (provide 'reazon)
 ;;; reazon.el ends here
