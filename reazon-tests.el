@@ -515,6 +515,23 @@
     (reazon-run 12 s
       (reazon-proper-member-o 'tofu s))))
 
+(ert-deftest reazon--test-mem-o ()
+  (reazon--should-equal '((tofu d tofu e) (tofu e))
+    (reazon-run* out
+      (reazon-fresh (x)
+        (reazon-mem-o 'tofu `(a b ,x d tofu e) out))))
+  (reazon--should-equal '(((tofu d tofu e . _0) _0)
+                          ((tofu e . _0) _0)
+                          ((tofu . _0) (tofu . _0))
+                          ((tofu . _0) (_1 tofu . _0))
+                          ((tofu . _0) (_1 _2 tofu . _0))
+                          ((tofu . _0) (_1 _2 _3 tofu . _0))
+                          ((tofu . _0) (_1 _2 _3 _4 tofu . _0))
+                          ((tofu . _0) (_1 _2 _3 _4 _5 tofu . _0))
+                          ((tofu . _0) (_1 _2 _3 _4 _5 _6 tofu . _0)))
+    (reazon-run 9 (x y)
+      (reazon-mem-o 'tofu `(a b tofu d tofu e . ,y) x))))
+
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here

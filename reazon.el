@@ -446,6 +446,13 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cdr-o s d)
       (reazon-proper-member-o x d)))))
 
+(reazon-defrel reazon-mem-o (x s out)
+  (reazon-conde
+   ((reazon-car-o s x) (reazon-== out s))
+   ((reazon-fresh (d)
+      (reazon-cdr-o s d)
+      (reazon-mem-o x d out)))))
+
 
 (provide 'reazon)
 ;;; reazon.el ends here
