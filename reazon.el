@@ -397,6 +397,14 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cons-o a res out)
       (reazon-append-o d p res)))))
 
+(reazon-defrel reazon-list-o (s)
+  (reazon-conde
+   ((reazon-null-o s))
+   ((reazon-pair-o s)
+    (reazon-fresh (d)
+      (reazon-cdr-o s d)
+      (reazon-list-o d)))))
+
 
 (provide 'reazon)
 ;;; reazon.el ends here

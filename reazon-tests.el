@@ -462,6 +462,13 @@
     (reazon-run* (x y)
       (reazon-append-o x y '(cake with ice d t)))))
 
+(ert-deftest reazon--test-list-o ()
+  (reazon--should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
+    (reazon-run 5 q
+      (reazon-list-o q))
+    (reazon-run 5 q
+      (reazon-list-o `(a b c . ,q)))))
+
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here
