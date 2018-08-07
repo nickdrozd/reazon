@@ -405,6 +405,16 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cdr-o s d)
       (reazon-list-o d)))))
 
+(reazon-defrel reazon-lol-o (s)
+  (reazon-conde
+   ((reazon-null-o s))
+   ((reazon-fresh (a)
+      (reazon-car-o s a)
+      (reazon-list-o a))
+    (reazon-fresh (d)
+      (reazon-cdr-o s d)
+      (reazon-lol-o d)))))
+
 
 (provide 'reazon)
 ;;; reazon.el ends here

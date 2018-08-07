@@ -469,6 +469,13 @@
     (reazon-run 5 q
       (reazon-list-o `(a b c . ,q)))))
 
+(ert-deftest reazon--test-lol-o ()
+  (reazon--should-equal '(nil (nil) ((_0)) (nil nil) ((_0 _1)))
+    (reazon-run 5 q
+      (reazon-lol-o q))
+    (reazon-run 5 q
+      (reazon-lol-o `((a b) (c d) . ,q)))))
+
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here
