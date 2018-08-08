@@ -462,6 +462,33 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cons-o a rec out)
       (reazon-rember-o x d rec)))))
 
+;; -- Utilities --
+
+(require 'profiler)
+
+(defun reazon-profile-memory ()
+  "Profile Reazon's memory usage.
+Keep an eye out for recursive functions!"
+  (interactive)
+  (profiler-start 'mem)
+  (dotimes (_ 100)
+    (let ((dummy (reazon-run* q
+                   (reazon-fresh (a b c d)
+                     (reazon-== q `((barnacle-hood melissa gabrielle) ,a ,b ,c ,d))
+                     (reazon-fresh (daughter)
+                       (reazon-== a `(moore ,daughter lorna)))
+                     (reazon-fresh (daughter)
+                       (reazon-== b `(downing ,daughter melissa)))
+                     (reazon-fresh (daughter)
+                       (reazon-== c `(hall ,daughter rosalind)))
+                     (reazon-fresh (common-name yacht other other-father)
+                       (reazon-== d `(parker ,common-name ,yacht))
+                       (reazon-== other `(,other-father gabrielle ,common-name))
+                       (reazon-member-o other q))))))
+      (null dummy)))
+  (profiler-report)
+  (profiler-stop))
+
 
 (provide 'reazon)
 ;;; reazon.el ends here
