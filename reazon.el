@@ -159,10 +159,11 @@ STREAM-2, else append them as usual."
             (reazon--append (cdr stream-1) stream-2)))))
 
 (defun reazon--pull (stream)
-  "Force STREAM and repull if it is a suspension, else just return it."
-  (if (not (functionp stream))
-      stream
-    (reazon--pull (funcall stream))))
+  "Force STREAM until it isn't a suspension, then return it."
+  (let ((result stream))
+    (while (functionp result)
+      (setq result (funcall result)))
+    result))
 
 (defun reazon--take (n stream)
   "Pull N values from STREAM if N is non-nil, else pull it without stopping."

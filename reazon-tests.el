@@ -566,35 +566,35 @@
 
 ;; Performance
 
-(ert-deftest reazon--test-memory-FAIL ()
-  (should-error
-   ;; Mary Ann's father has a yacht and so has each of his four
-   ;; friends. They are: Mr. Moore, Colonel Downing, Mr. Hall, Sir
-   ;; Barnacle Hood, and Dr. Parker. Each of the five also has one
-   ;; daughter and each has named his yacht after a daughter of one of
-   ;; the others. Sir Barnacle's yacht is the Gabrielle, Mr. Moore
-   ;; owns the Lorna; Mr. Hall the Rosalind. The Melissa, owned by
-   ;; Colonel Downing, is named after Sir Barnacle's daughter.
-   ;; Gabrielle's father owns the yacht that is named after Dr.
-   ;; Parker's daughter. Who is Lorna's father?
-   (let ((names '(mary-anne gabrielle lorna rosalind melissa)))
-     (reazon-run* q
-       (reazon-fresh (a b c d)
-         (reazon-== q `((barnacle-hood melissa gabrielle) ,a ,b ,c ,d))
-         (reazon-fresh (daughter)
-           (reazon-== a `(moore ,daughter lorna))
-           (reazon-member-o daughter names))
-         (reazon-fresh (daughter)
-           (reazon-== b `(downing ,daughter melissa))
-           (reazon-member-o daughter names))
-         (reazon-fresh (daughter)
-           (reazon-== c `(hall ,daughter rosalind))
-           (reazon-member-o daughter names))
-         (reazon-fresh (common-name yacht other other-father)
-           (reazon-== d `(parker ,common-name ,yacht))
-           (reazon-== other `(,other-father gabrielle ,common-name))
-           (reazon-member-o common-name names)
-           (reazon-member-o other q)))))))
+(ert-deftest reazon--test-memory-smoke ()
+  "Running this example should not OOM (it used to)."
+  ;; Mary Ann's father has a yacht and so has each of his four
+  ;; friends. They are: Mr. Moore, Colonel Downing, Mr. Hall, Sir
+  ;; Barnacle Hood, and Dr. Parker. Each of the five also has one
+  ;; daughter and each has named his yacht after a daughter of one of
+  ;; the others. Sir Barnacle's yacht is the Gabrielle, Mr. Moore owns
+  ;; the Lorna; Mr. Hall the Rosalind. The Melissa, owned by Colonel
+  ;; Downing, is named after Sir Barnacle's daughter. Gabrielle's
+  ;; father owns the yacht that is named after Dr. Parker's daughter.
+  ;; Who is Lorna's father?
+  (let ((names '(mary-anne gabrielle lorna rosalind melissa)))
+    (reazon-run* q
+      (reazon-fresh (a b c d)
+        (reazon-== q `((barnacle-hood melissa gabrielle) ,a ,b ,c ,d))
+        (reazon-fresh (daughter)
+          (reazon-== a `(moore ,daughter lorna))
+          (reazon-member-o daughter names))
+        (reazon-fresh (daughter)
+          (reazon-== b `(downing ,daughter melissa))
+          (reazon-member-o daughter names))
+        (reazon-fresh (daughter)
+          (reazon-== c `(hall ,daughter rosalind))
+          (reazon-member-o daughter names))
+        (reazon-fresh (common-name yacht other other-father)
+          (reazon-== d `(parker ,common-name ,yacht))
+          (reazon-== other `(,other-father gabrielle ,common-name))
+          (reazon-member-o common-name names)
+          (reazon-member-o other q))))))
 
 
 (provide 'reazon-tests)
