@@ -167,15 +167,18 @@ STREAM-2, else append them as usual."
     result))
 
 (defun reazon--take (n stream)
-  "Pull N values from STREAM if N is non-nil, else pull it without stopping."
+  "Pull N values from STREAM if N is positive else pull it without stopping."
   (declare (indent 1))
   (if (null stream)
       nil
-    (cons (car stream)
-          (if (and n (= n 1))
-              nil
-            (reazon--take (and n (1- n))
-              (reazon--pull (cdr stream)))))))
+    (let ((count (if n (1- n) -1))
+          (result (list (car stream)))
+          (rest (reazon--pull (cdr stream))))
+      (while (and rest (not (zerop count)))
+        (setq count (1- count))
+        (setq result (cons (car rest) result))
+        (setq rest (reazon--pull (cdr rest))))
+      (nreverse result))))
 
 ;; -- Goals --
 
