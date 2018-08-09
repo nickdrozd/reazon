@@ -64,11 +64,12 @@
 
 (defun reazon--walk (var sub)
   "Return the value associated with VAR in SUB if there is one, else VAR."
-  (let ((val (and (reazon--variable-p var)
-                  (assoc var sub))))
-    (if (consp val)
-        (reazon--walk (cdr val) sub)
-      var)))
+  (let* ((next var)
+         (val (and (reazon--variable-p next) (assoc next sub))))
+    (while (consp val)
+      (setq next (cdr val))
+      (setq val (and (reazon--variable-p next) (assoc next sub))))
+    next))
 
 (defun reazon--walk* (var sub)
   "Return SUB with VAR replaced by its recursively walked value."
