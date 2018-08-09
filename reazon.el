@@ -471,6 +471,21 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cons-o a rec out)
       (reazon-rember-o x d rec)))))
 
+(reazon-defrel reazon-next-to (x y s)
+  (reazon-fresh (a d)
+    (reazon-cons-o a d s)
+    (reazon-conde
+     ((reazon-== x a) (reazon-car-o d y))
+     ((reazon-== y a) (reazon-car-o d x))
+     ((reazon-next-to x y d)))))
+
+(reazon-defrel reazon-precedes (x y s)
+  (reazon-fresh (a d)
+    (reazon-cons-o a d s)
+    (reazon-conde
+     ((reazon-== x a) (reazon-car-o d y))
+     ((reazon-precedes x y d)))))
+
 ;; -- Utilities --
 
 (require 'profiler)
