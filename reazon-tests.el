@@ -596,6 +596,95 @@
           (reazon-member-o common-name names)
           (reazon-member-o other q))))))
 
+(ert-deftest reazon--test-zebra ()
+  (reazon--should-equal '(((yel nrw wat koo fox)
+                           (blu ukr tea chs hrs)
+                           (red eng mlk olg snl)
+                           (ivr spn ojj lks dog)
+                           (grn jap cof prl zeb)))
+    (reazon-run* q
+      ;; Represent houses as quintuples: (color nationality drink smoke pet)
+
+      ;; 1 There are five houses.
+      (reazon-fresh (a b c d e)
+        (reazon-== q `(,a ,b ,c ,d ,e))
+
+        ;; Ordering-related clues
+
+        ;; 10 The Norwegian lives in the first house.
+        (reazon-fresh (col drn smk pet)
+          (reazon-== a `(,col nrw ,drn ,smk ,pet)))
+
+        ;; 15 The Norwegian lives next to the blue house.
+        (reazon-fresh (nat drn smk pet)
+          (reazon-== b `(blu ,nat ,drn ,smk ,pet)))
+
+        ;; 9 Milk is drunk in the middle house.
+        (reazon-fresh (col nat smk pet)
+          (reazon-== c `(,col ,nat mlk ,smk ,pet)))
+
+        ;; 6 The green house is immediately to the right of the ivory house.
+        ;; 4 Coffee is drunk in the green house.
+        (reazon-fresh (ho1 ho2 nt1 nt2 dr1 sm1 sm2 pt1 pt2)
+          (reazon-== ho1 `(ivr ,nt1 ,dr1 ,sm1 ,pt1))
+          (reazon-== ho2 `(grn ,nt2 cof ,sm2 ,pt2))
+          (reazon-precedes ho1 ho2 q))
+
+        ;; 11 The man who smokes Chesterfields lives in the house next to the man with the fox.
+        (reazon-fresh (ho1 ho2 co1 co2 nt1 nt2 dr1 dr2 sm2 pt1)
+          (reazon-== ho1 `(,co1 ,nt1 ,dr1 chs ,pt1))
+          (reazon-== ho2 `(,co2 ,nt2 ,dr2 ,sm2 fox))
+          (reazon-next-to ho1 ho2 q))
+
+        ;; 12 Kools are smoked in the house next to the house where the horse is kept.
+        ;; 8 Kools are smoked in the yellow house.
+        (reazon-fresh (ho1 ho2 co2 nt1 nt2 dr1 dr2 sm2 pt1)
+          (reazon-== ho1 `(yel ,nt1 ,dr1 koo ,pt1))
+          (reazon-== ho2 `(,co2 ,nt2 ,dr2 ,sm2 hrs))
+          (reazon-next-to ho1 ho2 q)))
+
+      ;; General clues
+
+      ;; 2 The Englishman lives in the red house.
+      (reazon-fresh (hou drn smk pet)
+        (reazon-== hou `(red eng ,drn ,smk ,pet))
+        (reazon-member-o hou q))
+
+      ;; 3 The Spaniard owns the dog.
+      (reazon-fresh (hou col drn smk)
+        (reazon-== hou `(,col spn ,drn ,smk dog))
+        (reazon-member-o hou q))
+
+      ;; 5 The Ukrainian drinks tea.
+      (reazon-fresh (hou col smk pet)
+        (reazon-== hou `(,col ukr tea ,smk ,pet))
+        (reazon-member-o hou q))
+
+      ;; 7 The Old Gold smoker owns snails.
+      (reazon-fresh (hou col nat drn)
+        (reazon-== hou `(,col ,nat ,drn olg snl))
+        (reazon-member-o hou q))
+
+      ;; 13 The Lucky Strike smoker drinks orange juice.
+      (reazon-fresh (hou col nat pet)
+        (reazon-== hou `(,col ,nat ojj lks ,pet))
+        (reazon-member-o hou q))
+
+      ;; 14 The Japanese smokes Parliaments.
+      (reazon-fresh (hou col drn pet)
+        (reazon-== hou `(,col jap ,drn prl ,pet))
+        (reazon-member-o hou q))
+
+      ;; Now, who drinks water?
+      (reazon-fresh (hou col nat smk pet)
+        (reazon-== hou `(,col ,nat wat ,smk ,pet))
+        (reazon-member-o hou q))
+
+      ;; Who owns the zebra?
+      (reazon-fresh (hou col nat drn smk)
+        (reazon-== hou `(,col ,nat ,drn ,smk zeb))
+        (reazon-member-o hou q)))))
+
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here
