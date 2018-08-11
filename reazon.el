@@ -507,27 +507,11 @@ This will raise an error if the query has infinitely many solutions."
 Keep an eye out for recursive functions!"
   (interactive)
   (profiler-start 'mem)
-  (dotimes (_ 10)
+  (dotimes (_ 1)
     ;; dummy value to silence compiler warnings
     (let ((dummy
-           (let ((names '(mary-anne gabrielle lorna rosalind melissa)))
-             (reazon-run* q
-               (reazon-fresh (a b c d)
-                 (reazon-== q `((barnacle-hood melissa gabrielle) ,a ,b ,c ,d))
-                 (reazon-fresh (daughter)
-                   (reazon-== a `(moore ,daughter lorna))
-                   (reazon-member-o daughter names))
-                 (reazon-fresh (daughter)
-                   (reazon-== b `(downing ,daughter melissa))
-                   (reazon-member-o daughter names))
-                 (reazon-fresh (daughter)
-                   (reazon-== c `(hall ,daughter rosalind))
-                   (reazon-member-o daughter names))
-                 (reazon-fresh (common-name yacht other other-father)
-                   (reazon-== d `(parker ,common-name ,yacht))
-                   (reazon-== other `(,other-father gabrielle ,common-name))
-                   (reazon-member-o common-name names)
-                   (reazon-member-o other q)))))))
+           (reazon-run 8 q
+             (reazon-set-equal-o q '(1 2 3 4)))))
       (null dummy)))
   (profiler-report)
   (profiler-stop))
