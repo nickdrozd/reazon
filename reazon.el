@@ -486,6 +486,18 @@ This will raise an error if the query has infinitely many solutions."
      ((reazon-== x a) (reazon-car-o d y))
      ((reazon-precedes x y d)))))
 
+(reazon-defrel reazon-subset-o (subset set)
+  (reazon-conde
+   ((reazon-null-o subset))
+   ((reazon-fresh (a d)
+      (reazon-cons-o a d subset)
+      (reazon-member-o a set)
+      (reazon-subset-o d set)))))
+
+(reazon-defrel reazon-set-equal-o (s1 s2)
+  (reazon-subset-o s1 s2)
+  (reazon-subset-o s2 s1))
+
 ;; -- Utilities --
 
 (require 'profiler)
