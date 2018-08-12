@@ -287,14 +287,14 @@ function: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
 (defmacro reazon-disj (&rest goals)
   "Chain together GOALS with `reazon--disj-2' if there are any, else fail."
   (pcase (length goals)
-    (0 `reazon-!U)
+    (0 '#'reazon-!U)
     (1 (car goals))
     (_ `(reazon--disj-2 ,(car goals) (reazon-disj ,@(cdr goals))))))
 
 (defmacro reazon-conj (&rest goals)
   "Chain together GOALS with `reazon--conj-2' if there are any, else succeed."
   (pcase (length goals)
-    (0 `reazon-!S)
+    (0 '#'reazon-!S)
     (1 (car goals))
     (_ `(reazon--conj-2 ,(car goals) (reazon-conj ,@(cdr goals))))))
 

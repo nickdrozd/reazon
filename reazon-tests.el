@@ -282,7 +282,16 @@
        ((reazon--test-teacup-o x) (reazon--test-teacup-o x))
        ((reazon-== x t) (reazon--test-teacup-o y))))))
 
+(ert-deftest reazon--test-empty-conj-disj ()
+  (reazon--should-equal '(_0)
+    (reazon-run* q)
+    (reazon-run* q (reazon-conj)))
+  (reazon--should-equal '()
+    (reazon-run* q (reazon-disj))))
+
 (ert-deftest reazon--test-conde ()
+  (reazon--should-equal '()
+    (reazon-run* q (reazon-conde)))
   (reazon--should-equal '((split pea) (navy bean) (red lentil))
     (reazon-run* (x y)
       (reazon-conde
