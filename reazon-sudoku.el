@@ -44,7 +44,8 @@ Example call:
         => ((2 3 1 4 4 1 3 2 3 2 4 1 1 4 2 3))
 
 If there are multiple solutions satisfying the given constraints, all of them
-will be generated."
+will be generated. In particular, if no constraints are specified, all 4x4
+solved instances will be generated."
 
   `(let ((range '(1 2 3 4)))
      (reazon-run* (a1 a2 a3 a4 b1 b2 b3 b4 c1 c2 c3 c4 d1 d2 d3 d4)
@@ -54,40 +55,17 @@ will be generated."
           coordinate-value-pairs)
 
        (reazon-subset-o range `(,a1 ,a2 ,a3 ,a4))
-       (reazon-subset-o range `(,b1 ,b2 ,b3 ,b4))
-       (reazon-subset-o range `(,c1 ,c2 ,c3 ,c4))
-       (reazon-subset-o range `(,d1 ,d2 ,d3 ,d4))
-
        (reazon-subset-o range `(,a1 ,b1 ,c1 ,d1))
+       (reazon-subset-o range `(,a1 ,a2 ,b1 ,b2))
+       (reazon-subset-o range `(,b1 ,b2 ,b3 ,b4))
        (reazon-subset-o range `(,a2 ,b2 ,c2 ,d2))
        (reazon-subset-o range `(,a3 ,b3 ,c3 ,d3))
-       (reazon-subset-o range `(,a4 ,b4 ,c4 ,d4))
-
-       (reazon-subset-o range `(,a1 ,a2 ,b1 ,b2))
        (reazon-subset-o range `(,a3 ,a4 ,b3 ,b4))
+       (reazon-subset-o range `(,a4 ,b4 ,c4 ,d4))
+       (reazon-subset-o range `(,c1 ,c2 ,c3 ,c4))
        (reazon-subset-o range `(,c1 ,c2 ,d1 ,d2))
+       (reazon-subset-o range `(,d1 ,d2 ,d3 ,d4))
        (reazon-subset-o range `(,c3 ,c4 ,d3 ,d4)))))
-
-(defun reazon-sudoku-generate-4x4 (n)
-  "Generate N solved 4x4 Sudoku instances from scratch.
-This is slow, so be patient!"
-  (let ((range '(1 2 3 4)))
-    (reazon-run n (a1 a2 a3 a4 b1 b2 b3 b4 c1 c2 c3 c4 d1 d2 d3 d4)
-
-      (reazon-subset-o range `(,a1 ,a2 ,a3 ,a4))
-      (reazon-subset-o range `(,b1 ,b2 ,b3 ,b4))
-      (reazon-subset-o range `(,c1 ,c2 ,c3 ,c4))
-      (reazon-subset-o range `(,d1 ,d2 ,d3 ,d4))
-
-      (reazon-subset-o range `(,a1 ,b1 ,c1 ,d1))
-      (reazon-subset-o range `(,a2 ,b2 ,c2 ,d2))
-      (reazon-subset-o range `(,a3 ,b3 ,c3 ,d3))
-      (reazon-subset-o range `(,a4 ,b4 ,c4 ,d4))
-
-      (reazon-subset-o range `(,a1 ,a2 ,b1 ,b2))
-      (reazon-subset-o range `(,a3 ,a4 ,b3 ,b4))
-      (reazon-subset-o range `(,c1 ,c2 ,d1 ,d2))
-      (reazon-subset-o range `(,c3 ,c4 ,d3 ,d4)))))
 
 
 (provide 'reazon-sudoku)

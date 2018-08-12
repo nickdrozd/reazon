@@ -46,7 +46,7 @@ Keep an eye out for recursive functions!"
 (defun reazon-benchmark ()
   "Benchmark Reazon performance."
   (interactive)
-  (benchmark 1 '(reazon-sudoku-generate-4x4 1)))
+  (benchmark 1 '(reazon-sudoku-solve-4x4)))
 
 
 (provide 'reazon-perf)
