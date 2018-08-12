@@ -498,24 +498,6 @@ This will raise an error if the query has infinitely many solutions."
   (reazon-subset-o s1 s2)
   (reazon-subset-o s2 s1))
 
-;; -- Utilities --
-
-(require 'profiler)
-
-(defun reazon-profile-memory ()
-  "Profile Reazon's memory usage.
-Keep an eye out for recursive functions!"
-  (interactive)
-  (profiler-start 'mem)
-  (dotimes (_ 1)
-    ;; dummy value to silence compiler warnings
-    (let ((dummy
-           (reazon-run 8 q
-             (reazon-set-equal-o q '(1 2 3 4)))))
-      (null dummy)))
-  (profiler-report)
-  (profiler-stop))
-
 
 (provide 'reazon)
 ;;; reazon.el ends here
