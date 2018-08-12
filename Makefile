@@ -3,7 +3,9 @@ OBJS = $(SRCS:.el=.elc)
 
 BATCH = emacs -Q --batch --directory .
 
-.PHONY: clean compile test
+.PHONY: all clean compile test
+
+all: clean compile test
 
 clean:
 	$(RM) $(OBJS)
