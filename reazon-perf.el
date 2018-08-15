@@ -38,7 +38,7 @@ Keep an eye out for recursive functions!"
     ;; dummy value to silence compiler warnings
     (let ((dummy
            (reazon-run 8 q
-             (reazon-set-equal-o q '(1 2 3 4)))))
+             (reazon-set-equalo q '(1 2 3 4)))))
       (null dummy)))
   (profiler-report)
   (profiler-stop))

@@ -252,35 +252,35 @@
          (reazon-== q (* x x)))
        (reazon-== x 5)))))
 
-(reazon-defrel reazon--test-teacup-o (x)
+(reazon-defrel reazon--test-teacupo (x)
   (reazon-disj (reazon-== x 'tea) (reazon-== x 'cup)))
 
 (ert-deftest reazon--test-defrel ()
   (reazon--should-equal '(tea cup)
-    (reazon-run* x (reazon--test-teacup-o x)))
+    (reazon-run* x (reazon--test-teacupo x)))
   (reazon--should-equal '((nil t) (tea t) (cup t))
     (reazon-run* (x y)
       (reazon-conde
-       ((reazon--test-teacup-o x) (reazon-== y t))
+       ((reazon--test-teacupo x) (reazon-== y t))
        ((reazon-== x nil) (reazon-== y t)))))
   (reazon--should-equal '((tea tea) (tea cup) (cup tea) (cup cup))
     (reazon-run* (x y)
-      (reazon--test-teacup-o x)
-      (reazon--test-teacup-o y)))
+      (reazon--test-teacupo x)
+      (reazon--test-teacupo y)))
   (reazon--should-equal '(tea cup)
     (reazon-run* x
-      (reazon--test-teacup-o x)
-      (reazon--test-teacup-o x)))
+      (reazon--test-teacupo x)
+      (reazon--test-teacupo x)))
   (reazon--should-equal '((nil tea) (nil cup) (tea _0) (cup _0))
     (reazon-run* (x y)
       (reazon--disj-2
-       (reazon--conj-2 (reazon--test-teacup-o x) (reazon--test-teacup-o x))
-       (reazon--conj-2 (reazon-== nil x) (reazon--test-teacup-o y)))))
+       (reazon--conj-2 (reazon--test-teacupo x) (reazon--test-teacupo x))
+       (reazon--conj-2 (reazon-== nil x) (reazon--test-teacupo y)))))
   (reazon--should-equal '((t tea) (t cup) (tea _0) (cup _0))
     (reazon-run* (x y)
       (reazon-conde
-       ((reazon--test-teacup-o x) (reazon--test-teacup-o x))
-       ((reazon-== x t) (reazon--test-teacup-o y))))))
+       ((reazon--test-teacupo x) (reazon--test-teacupo x))
+       ((reazon-== x t) (reazon--test-teacupo y))))))
 
 (ert-deftest reazon--test-empty-conj-disj ()
   (reazon--should-equal '(_0)
@@ -304,18 +304,18 @@
        ((reazon-== x 'olive) #'reazon-!U)
        ((reazon-== x 'oil))))))
 
-(ert-deftest reazon--test-car-o ()
+(ert-deftest reazon--test-caro ()
   (reazon--should-equal '(a)
     (reazon-run* p
-      (reazon-car-o '(a c o r n) p)))
+      (reazon-caro '(a c o r n) p)))
   (reazon--should-equal '(t)
     (reazon-run* q
-      (reazon-car-o '(a c o r n) 'a)
+      (reazon-caro '(a c o r n) 'a)
       (reazon-== q t)))
   (reazon--should-equal '(pear)
     (reazon-run* r
       (reazon-fresh (x y)
-        (reazon-car-o `(,r ,y) x)
+        (reazon-caro `(,r ,y) x)
         (reazon-== x 'pear))))
   (reazon--should-equal '((grape a))
     (reazon-run* r
@@ -325,127 +325,127 @@
         (reazon-== r (cons x y))))
     (reazon-run* r
       (reazon-fresh (x y)
-        (reazon-car-o '(grape raisin pear) x)
-        (reazon-car-o '((a) (b) (c)) y)
+        (reazon-caro '(grape raisin pear) x)
+        (reazon-caro '((a) (b) (c)) y)
         (reazon-== r (cons x y))))))
 
-(ert-deftest reazon--test-cdr-o ()
+(ert-deftest reazon--test-cdro ()
   (reazon--should-equal '(c)
     (reazon-run* r
       (reazon-fresh (v)
-        (reazon-cdr-o '(a c o r n) v)
-        (reazon-car-o v r))))
+        (reazon-cdro '(a c o r n) v)
+        (reazon-caro v r))))
   (reazon--should-equal '(((raisin pear) a))
     (reazon-run* r
       (reazon-fresh (x y)
-        (reazon-cdr-o '(grape raisin pear) x)
-        (reazon-car-o '((a) (b) (c)) y)
+        (reazon-cdro '(grape raisin pear) x)
+        (reazon-caro '((a) (b) (c)) y)
         (reazon-== r (cons x y)))))
   (reazon--should-equal '(t)
     (reazon-run* q
-      (reazon-cdr-o '(a c o r n) '(c o r n))
+      (reazon-cdro '(a c o r n) '(c o r n))
       (reazon-== q t)))
   (reazon--should-equal '(o)
     (reazon-run* x
-      (reazon-cdr-o '(c o r n) `(,x r n))))
+      (reazon-cdro '(c o r n) `(,x r n))))
   (reazon--should-equal '((a c o r n))
     (reazon-run* l
       (reazon-fresh (x)
-        (reazon-cdr-o l '(c o r n))
-        (reazon-car-o l x)
+        (reazon-cdro l '(c o r n))
+        (reazon-caro l x)
         (reazon-== x 'a)))))
 
-(ert-deftest reazon--test-cons-o ()
+(ert-deftest reazon--test-conso ()
   (reazon--should-equal '(((a b c) d e f))
     (reazon-run* l
-      (reazon-cons-o '(a b c) '(d e f) l)))
+      (reazon-conso '(a b c) '(d e f) l)))
   (reazon--should-equal '(d)
     (reazon-run* x
-      (reazon-cons-o x '(a b c) '(d a b c))))
+      (reazon-conso x '(a b c) '(d a b c))))
   (reazon--should-equal '((e a d c ))
     (reazon-run* r
       (reazon-fresh (x y z)
         (reazon-== r `(e a d ,x))
-        (reazon-cons-o y `(a ,z c) r))))
+        (reazon-conso y `(a ,z c) r))))
   (reazon--should-equal '((d a d c))
     (reazon-run* l
       (reazon-fresh (x)
         (reazon-== l `(d a ,x c))
-        (reazon-cons-o x `(a ,x c) l)))
+        (reazon-conso x `(a ,x c) l)))
     (reazon-run* l
       (reazon-fresh (x)
-        (reazon-cons-o x `(a ,x c) l)
+        (reazon-conso x `(a ,x c) l)
         (reazon-== l `(d a ,x c)))))
   (reazon--should-equal '((b o n u s))
     (reazon-run* l
       (reazon-fresh (d p x y w)
-        (reazon-cons-o w '(n u s) p)
-        (reazon-cdr-o l p)
-        (reazon-car-o l x)
+        (reazon-conso w '(n u s) p)
+        (reazon-cdro l p)
+        (reazon-caro l x)
         (reazon-== x 'b)
-        (reazon-cdr-o l d)
-        (reazon-car-o d y)
+        (reazon-cdro l d)
+        (reazon-caro d y)
         (reazon-== y 'o)))))
 
-(ert-deftest reazon--test-null-o ()
+(ert-deftest reazon--test-nullo ()
   (reazon--should-equal '()
     (reazon-run* q
-      (reazon-null-o '(grape raisin pear))
+      (reazon-nullo '(grape raisin pear))
       (reazon-== q t)))
   (reazon--should-equal '(t)
     (reazon-run* q
-      (reazon-null-o '())
+      (reazon-nullo '())
       (reazon-== q t)))
   (reazon--should-equal '(())
     (reazon-run* x
-      (reazon-null-o x))))
+      (reazon-nullo x))))
 
-(ert-deftest reazon--test-pair-o ()
+(ert-deftest reazon--test-pairo ()
   (reazon--should-equal '(t)
     (reazon-run* q
-      (reazon-pair-o (cons q q))
+      (reazon-pairo (cons q q))
       (reazon-== q t)))
   (reazon--should-equal '()
     (reazon-run* q
-      (reazon-pair-o '())
+      (reazon-pairo '())
       (reazon-== q t))
     (reazon-run* q
-      (reazon-pair-o 'pair)
+      (reazon-pairo 'pair)
       (reazon-== q t)))
   (reazon--should-equal '((_0 . _1))
     (reazon-run* x
-      (reazon-pair-o x))))
+      (reazon-pairo x))))
 
-(ert-deftest reazon--test-append-o ()
+(ert-deftest reazon--test-appendo ()
   (reazon--should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
     (reazon-run 5 x
       (reazon-fresh (y z)
-        (reazon-append-o x y z))))
+        (reazon-appendo x y z))))
   (reazon--should-equal '(_0 _0 _0 _0 _0)
     (reazon-run 5 y
       (reazon-fresh (x z)
-        (reazon-append-o x y z))))
+        (reazon-appendo x y z))))
   (reazon--should-equal '(_0 (_0 . _1) (_0 _1 . _2) (_0 _1 _2 . _3) (_0 _1 _2 _3 . _4))
     (reazon-run 5 z
       (reazon-fresh (x y)
-        (reazon-append-o x y z))))
+        (reazon-appendo x y z))))
   (reazon--should-equal '((cake tastes yummy))
     (reazon-run* x
-      (reazon-append-o
+      (reazon-appendo
        '(cake)
        '(tastes yummy)
        x)))
   (reazon--should-equal '((cake with ice _0 tastes yummy))
     (reazon-run* x
       (reazon-fresh (y)
-        (reazon-append-o
+        (reazon-appendo
          `(cake with ice ,y)
          '(tastes yummy)
          x))))
   (reazon--should-equal '((cake with ice cream . _0))
     (reazon-run* x
       (reazon-fresh (y)
-        (reazon-append-o
+        (reazon-appendo
          '(cake with ice cream)
          y
          x))))
@@ -456,11 +456,11 @@
                           (cake with ice _0 _1 _2 _3 d t))
     (reazon-run 5 x
       (reazon-fresh (y)
-        (reazon-append-o `(cake with ice . ,y) '(d t) x))))
+        (reazon-appendo `(cake with ice . ,y) '(d t) x))))
   (reazon--should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
     (reazon-run 5 y
       (reazon-fresh (x)
-        (reazon-append-o `(cake with ice . ,y) '(d t) x))))
+        (reazon-appendo `(cake with ice . ,y) '(d t) x))))
   (reazon--should-equal '((() (cake with ice d t))
                           ((cake) (with ice d t))
                           ((cake with) (ice d t))
@@ -468,86 +468,86 @@
                           ((cake with ice d) (t))
                           ((cake with ice d t) ()))
     (reazon-run 6 (x y)
-      (reazon-append-o x y '(cake with ice d t)))
+      (reazon-appendo x y '(cake with ice d t)))
     (reazon-run* (x y)
-      (reazon-append-o x y '(cake with ice d t)))))
+      (reazon-appendo x y '(cake with ice d t)))))
 
-(ert-deftest reazon--test-list-o ()
+(ert-deftest reazon--test-listo ()
   (reazon--should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
     (reazon-run 5 q
-      (reazon-list-o q))
+      (reazon-listo q))
     (reazon-run 5 q
-      (reazon-list-o `(a b c . ,q)))))
+      (reazon-listo `(a b c . ,q)))))
 
-(reazon-defrel reazon-lol-o (s)
+(reazon-defrel reazon-lolo (s)
   (reazon-conde
-   ((reazon-null-o s))
+   ((reazon-nullo s))
    ((reazon-fresh (a)
-      (reazon-car-o s a)
-      (reazon-list-o a))
+      (reazon-caro s a)
+      (reazon-listo a))
     (reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-lol-o d)))))
+      (reazon-cdro s d)
+      (reazon-lolo d)))))
 
-(ert-deftest reazon--test-lol-o ()
+(ert-deftest reazon--test-lolo ()
   (reazon--should-equal '(nil (nil) ((_0)) (nil nil) ((_0 _1)))
     (reazon-run 5 q
-      (reazon-lol-o q))
+      (reazon-lolo q))
     (reazon-run 5 q
-      (reazon-lol-o `((a b) (c d) . ,q)))))
+      (reazon-lolo `((a b) (c d) . ,q)))))
 
-(reazon-defrel reazon-twin-o (s)
+(reazon-defrel reazon-twino (s)
   (reazon-fresh (x)
     (reazon-== s `(,x ,x))))
 
-(ert-deftest reazon--test-twin-o ()
+(ert-deftest reazon--test-twino ()
   (reazon--should-equal '(tofu)
-    (reazon-run* q (reazon-twin-o `(,q tofu)))))
+    (reazon-run* q (reazon-twino `(,q tofu)))))
 
-(reazon-defrel reazon-lot-o (s)
+(reazon-defrel reazon-loto (s)
   (reazon-conde
-   ((reazon-null-o s))
+   ((reazon-nullo s))
    ((reazon-fresh (a)
-      (reazon-car-o s a)
-      (reazon-twin-o a))
+      (reazon-caro s a)
+      (reazon-twino a))
     (reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-lot-o d)))))
+      (reazon-cdro s d)
+      (reazon-loto d)))))
 
-(ert-deftest reazon--test-lot-o ()
+(ert-deftest reazon--test-loto ()
   (reazon--should-equal '(nil ((_0 _0)) ((_0 _0) (_1 _1)))
     (reazon-run 3 q
-      (reazon-lot-o q))
+      (reazon-loto q))
     (reazon-run 3 q
-      (reazon-lot-o `((g g) . ,q)))))
+      (reazon-loto `((g g) . ,q)))))
 
-(ert-deftest reazon--test-member-o ()
+(ert-deftest reazon--test-membero ()
   (reazon--should-equal '(e)
     (reazon-run* x
-      (reazon-member-o 'e `(pasta ,x fagioli))))
+      (reazon-membero 'e `(pasta ,x fagioli))))
   (reazon--should-equal '((e _0) (_0 e))
     (reazon-run* (x y)
-      (reazon-member-o 'e `(pasta ,x fagioli ,y))))
+      (reazon-membero 'e `(pasta ,x fagioli ,y))))
   (reazon--should-equal '((pasta e fagioli _0) (pasta _0 fagioli e))
     (reazon-run* q
       (reazon-fresh (x y)
         (reazon-== q `(pasta ,x fagioli ,y))
-        (reazon-member-o 'e q))))
+        (reazon-membero 'e q))))
   (reazon--should-equal '((tofu . _0) (_0 tofu . _1) (_0 _1 tofu . _2))
     (reazon-run 3 s
-      (reazon-member-o 'tofu s))))
+      (reazon-membero 'tofu s))))
 
-(reazon-defrel reazon-proper-member-o (x s)
+(reazon-defrel reazon-proper-membero (x s)
   (reazon-conde
-   ((reazon-car-o s x)
+   ((reazon-caro s x)
     (reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-list-o d)))
+      (reazon-cdro s d)
+      (reazon-listo d)))
    ((reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-proper-member-o x d)))))
+      (reazon-cdro s d)
+      (reazon-proper-membero x d)))))
 
-(ert-deftest reazon--test-proper-member-o ()
+(ert-deftest reazon--test-proper-membero ()
   ;; The ordering here is different from what's in the book.
   (reazon--should-equal '((tofu) (tofu _0) (_0 tofu) (tofu _0 _1)
                           (tofu _0 _1 _2) (_0 tofu _1)
@@ -557,20 +557,20 @@
                           (tofu _0 _1 _2 _3 _4 _5)
                           (tofu _0 _1 _2 _3 _4 _5 _6))
     (reazon-run 12 s
-      (reazon-proper-member-o 'tofu s))))
+      (reazon-proper-membero 'tofu s))))
 
-(reazon-defrel reazon-mem-o (x s out)
+(reazon-defrel reazon-memo (x s out)
   (reazon-conde
-   ((reazon-car-o s x) (reazon-== out s))
+   ((reazon-caro s x) (reazon-== out s))
    ((reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-mem-o x d out)))))
+      (reazon-cdro s d)
+      (reazon-memo x d out)))))
 
-(ert-deftest reazon--test-mem-o ()
+(ert-deftest reazon--test-memo ()
   (reazon--should-equal '((tofu d tofu e) (tofu e))
     (reazon-run* out
       (reazon-fresh (x)
-        (reazon-mem-o 'tofu `(a b ,x d tofu e) out))))
+        (reazon-memo 'tofu `(a b ,x d tofu e) out))))
   (reazon--should-equal '(((tofu d tofu e . _0) _0)
                           ((tofu e . _0) _0)
                           ((tofu . _0) (tofu . _0))
@@ -581,48 +581,48 @@
                           ((tofu . _0) (_1 _2 _3 _4 _5 tofu . _0))
                           ((tofu . _0) (_1 _2 _3 _4 _5 _6 tofu . _0)))
     (reazon-run 9 (x y)
-      (reazon-mem-o 'tofu `(a b tofu d tofu e . ,y) x))))
+      (reazon-memo 'tofu `(a b tofu d tofu e . ,y) x))))
 
-(reazon-defrel reazon-rember-o (x s out)
+(reazon-defrel reazon-rembero (x s out)
   (reazon-conde
-   ((reazon-null-o s) (reazon-null-o out))
-   ((reazon-car-o s x) (reazon-cdr-o s out))
+   ((reazon-nullo s) (reazon-nullo out))
+   ((reazon-caro s x) (reazon-cdro s out))
    ((reazon-fresh (a d rec)
-      (reazon-cons-o a d s)
-      (reazon-cons-o a rec out)
-      (reazon-rember-o x d rec)))))
+      (reazon-conso a d s)
+      (reazon-conso a rec out)
+      (reazon-rembero x d rec)))))
 
-(ert-deftest reazon--test-rember-o ()
+(ert-deftest reazon--test-rembero ()
   ;; These tests confirm some behavior that seems pathological. If all
   ;; the other tests pass and these ones don't, that might be good.
   (reazon--should-equal '((a b d peas e))
     (reazon-run 1 out
       (reazon-fresh (y)
-        (reazon-rember-o 'peas `(a b ,y d peas e) out))))
+        (reazon-rembero 'peas `(a b ,y d peas e) out))))
   (reazon--should-equal '((b a d _0 e) (a b d _0 e) (a b d _0 e)
                           (a b d _0 e) (a b _0 d e)
                           (a b e d _0) (a b _0 d _1 e))
     (reazon-run* out
       (reazon-fresh (y z)
-        (reazon-rember-o y `(a b ,y d ,z e) out))))
+        (reazon-rembero y `(a b ,y d ,z e) out))))
   (reazon--should-equal '(_0 _0 _0 _0 _0
                              nil (_0 . _1) (_0)
                              (_0 _1 . _2) (_0 _1)
                              (_0 _1 _2 . _3))
     (reazon-run 11 w
       (reazon-fresh (y z out)
-        (reazon-rember-o y `(a b ,y d ,z . ,w) out))))
+        (reazon-rembero y `(a b ,y d ,z . ,w) out))))
   (reazon--should-equal '((peas a peas c) (a peas peas c) (a peas peas c)
                           (a peas c) (a peas c peas))
     (reazon-run* q
-      (reazon-rember-o 'peas q `(a peas c))))
+      (reazon-rembero 'peas q `(a peas c))))
   (reazon--should-equal '(b)
     (reazon-run* r
-      (reazon-rember-o r '(a b c) '(a b c))
+      (reazon-rembero r '(a b c) '(a b c))
       (reazon-== r 'b))
     (reazon-run* r
       (reazon-== r 'b)
-      (reazon-rember-o r '(a b c) '(a b c)))))
+      (reazon-rembero r '(a b c) '(a b c)))))
 
 ;; Performance
 
@@ -643,18 +643,18 @@
         (reazon-== q `((barnacle-hood melissa gabrielle) ,a ,b ,c ,d))
         (reazon-fresh (daughter)
           (reazon-== a `(moore ,daughter lorna))
-          (reazon-member-o daughter names))
+          (reazon-membero daughter names))
         (reazon-fresh (daughter)
           (reazon-== b `(downing ,daughter melissa))
-          (reazon-member-o daughter names))
+          (reazon-membero daughter names))
         (reazon-fresh (daughter)
           (reazon-== c `(hall ,daughter rosalind))
-          (reazon-member-o daughter names))
+          (reazon-membero daughter names))
         (reazon-fresh (common-name yacht other other-father)
           (reazon-== d `(parker ,common-name ,yacht))
           (reazon-== other `(,other-father gabrielle ,common-name))
-          (reazon-member-o common-name names)
-          (reazon-member-o other q))))))
+          (reazon-membero common-name names)
+          (reazon-membero other q))))))
 
 (ert-deftest reazon--test-zebra ()
   (reazon--should-equal '(((yel nrw wat koo fox)
@@ -688,7 +688,7 @@
         (reazon-fresh (ho1 ho2 nt1 nt2 dr1 sm1 sm2 pt1 pt2)
           (reazon-== ho1 `(ivr ,nt1 ,dr1 ,sm1 ,pt1))
           (reazon-== ho2 `(grn ,nt2 cof ,sm2 ,pt2))
-          (reazon-precedes ho1 ho2 q))
+          (reazon-precedeso ho1 ho2 q))
 
         ;; 11 The man who smokes Chesterfields lives in the house next to the man with the fox.
         (reazon-fresh (ho1 ho2 co1 co2 nt1 nt2 dr1 dr2 sm2 pt1)
@@ -708,42 +708,42 @@
       ;; 2 The Englishman lives in the red house.
       (reazon-fresh (hou drn smk pet)
         (reazon-== hou `(red eng ,drn ,smk ,pet))
-        (reazon-member-o hou q))
+        (reazon-membero hou q))
 
       ;; 3 The Spaniard owns the dog.
       (reazon-fresh (hou col drn smk)
         (reazon-== hou `(,col spn ,drn ,smk dog))
-        (reazon-member-o hou q))
+        (reazon-membero hou q))
 
       ;; 5 The Ukrainian drinks tea.
       (reazon-fresh (hou col smk pet)
         (reazon-== hou `(,col ukr tea ,smk ,pet))
-        (reazon-member-o hou q))
+        (reazon-membero hou q))
 
       ;; 7 The Old Gold smoker owns snails.
       (reazon-fresh (hou col nat drn)
         (reazon-== hou `(,col ,nat ,drn olg snl))
-        (reazon-member-o hou q))
+        (reazon-membero hou q))
 
       ;; 13 The Lucky Strike smoker drinks orange juice.
       (reazon-fresh (hou col nat pet)
         (reazon-== hou `(,col ,nat ojj lks ,pet))
-        (reazon-member-o hou q))
+        (reazon-membero hou q))
 
       ;; 14 The Japanese smokes Parliaments.
       (reazon-fresh (hou col drn pet)
         (reazon-== hou `(,col jap ,drn prl ,pet))
-        (reazon-member-o hou q))
+        (reazon-membero hou q))
 
       ;; Now, who drinks water?
       (reazon-fresh (hou col nat smk pet)
         (reazon-== hou `(,col ,nat wat ,smk ,pet))
-        (reazon-member-o hou q))
+        (reazon-membero hou q))
 
       ;; Who owns the zebra?
       (reazon-fresh (hou col nat drn smk)
         (reazon-== hou `(,col ,nat ,drn ,smk zeb))
-        (reazon-member-o hou q)))))
+        (reazon-membero hou q)))))
 
 (ert-deftest reazon--test-sudoku-solve-4x4 ()
   (reazon--should-equal '((2 3 1 4 4 1 3 2 3 2 4 1 1 4 2 3))
