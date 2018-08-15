@@ -55,7 +55,7 @@
 
 ;; Internal functions
 
-(ert-deftest reazon--variable-test ()
+(ert-deftest reazon--test-variable ()
   (should (reazon--variable-p (reazon--make-variable 'x)))
   (should-not (reazon--variable-p 'x))
   (reazon--with-variables (x y z)
@@ -63,7 +63,7 @@
     (should (reazon--variable-p y))
     (should (reazon--variable-p z))))
 
-(ert-deftest reazon--walk-test ()
+(ert-deftest reazon--test-walk ()
   (reazon--with-variables (u w x y z)
     (let ((sub-1 `((,z . a) (,x . ,w) (,y . ,z)))
           (sub-2 `((,x . b) (,z . ,y) (,w . (,x e ,z)) (,u . ,w))))
@@ -77,12 +77,12 @@
       (reazon--should-equal `(,x e ,z) (reazon--walk u sub-2))
       (reazon--should-equal `(b e ,y) (reazon--walk* u sub-2)))))
 
-(ert-deftest reazon--occurs-test ()
+(ert-deftest reazon--test-occurs ()
   (reazon--with-variables (x y)
     (should (reazon--occurs-p x x '()))
     (should (reazon--occurs-p x `(,y) `((,y . ,x))))))
 
-(ert-deftest reazon--extend-test ()
+(ert-deftest reazon--test-extend ()
   (reazon--with-variables (x y z)
     (reazon--should-equal reazon--false
       (reazon--extend x x '())
@@ -91,7 +91,7 @@
     (reazon--should-equal 'e
       (reazon--walk y (reazon--extend x 'e `((,z . ,x) (,y . ,z)))))))
 
-(ert-deftest reazon--unification-test ()
+(ert-deftest reazon--test-unification ()
   (reazon--should-equal '(())
     (reazon-!S '())
     (funcall (reazon-== 4 4) '()))
@@ -99,7 +99,7 @@
     (reazon-!U '())
     (funcall (reazon-== 4 5) '())))
 
-(ert-deftest reazon--reify-test ()
+(ert-deftest reazon--test-reify ()
   (reazon--with-variables (u v w x y z)
     (let ((a1 `(,x . (,u ,w ,y ,z ((ice) ,z))))
           (a2 `(,y . corn))
@@ -107,7 +107,7 @@
       (reazon--should-equal `(_0 (_1 _0) corn _2 ((ice) _2))
         (funcall (reazon--reify x) `(,a1 ,a2 ,a3))))))
 
-(ert-deftest reazon--stream-test ()
+(ert-deftest reazon--test-stream ()
   (let ((s1 '(a b c d))
         (s2 `(e f . (lambda () '(g h))))
         (s3 (lambda () '(i j k l))))
@@ -116,7 +116,7 @@
     (reazon--should-equal '(e f g h)
       (reazon--take nil s2))))
 
-(ert-deftest reazon--goal-test ()
+(ert-deftest reazon--test-goal ()
   (reazon--with-variables (x)
     (let* ((g (reazon--disj-2 (reazon-== 'olive x) (reazon-== 'oil x)))
            (s (reazon--run-goal g))
@@ -142,7 +142,7 @@
     (lambda ()
       (funcall (reazon--disj-2 #'reazon-!S (reazon--test-productive)) s))))
 
-(ert-deftest reazon--productivity-test ()
+(ert-deftest reazon--test-productivity ()
   (reazon--with-variables (x)
     (let ((s (funcall (reazon--disj-2
                        (reazon-== 'olive x)
