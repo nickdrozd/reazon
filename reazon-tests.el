@@ -694,14 +694,14 @@
         (reazon-fresh (ho1 ho2 co1 co2 nt1 nt2 dr1 dr2 sm2 pt1)
           (reazon-== ho1 `(,co1 ,nt1 ,dr1 chs ,pt1))
           (reazon-== ho2 `(,co2 ,nt2 ,dr2 ,sm2 fox))
-          (reazon-next-to ho1 ho2 q))
+          (reazon-adjacento ho1 ho2 q))
 
         ;; 12 Kools are smoked in the house next to the house where the horse is kept.
         ;; 8 Kools are smoked in the yellow house.
         (reazon-fresh (ho1 ho2 co2 nt1 nt2 dr1 dr2 sm2 pt1)
           (reazon-== ho1 `(yel ,nt1 ,dr1 koo ,pt1))
           (reazon-== ho2 `(,co2 ,nt2 ,dr2 ,sm2 hrs))
-          (reazon-next-to ho1 ho2 q)))
+          (reazon-adjacento ho1 ho2 q)))
 
       ;; General clues
 

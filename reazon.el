@@ -421,13 +421,13 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cdro s d)
       (reazon-membero x d)))))
 
-(reazon-defrel reazon-next-to (x y s)
+(reazon-defrel reazon-adjacento (x y s)
   (reazon-fresh (a d)
     (reazon-conso a d s)
     (reazon-conde
      ((reazon-== x a) (reazon-caro d y))
      ((reazon-== y a) (reazon-caro d x))
-     ((reazon-next-to x y d)))))
+     ((reazon-adjacento x y d)))))
 
 (reazon-defrel reazon-precedeso (x y s)
   (reazon-fresh (a d)
