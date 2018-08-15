@@ -398,14 +398,6 @@ This will raise an error if the query has infinitely many solutions."
   (reazon-fresh (a d)
     (reazon-cons-o a d p)))
 
-(reazon-defrel reazon-append-o (l p out)
-  (reazon-conde
-   ((reazon-null-o l) (reazon-== p out))
-   ((reazon-fresh (a d res)
-      (reazon-cons-o a d l)
-      (reazon-cons-o a res out)
-      (reazon-append-o d p res)))))
-
 (reazon-defrel reazon-list-o (s)
   (reazon-conde
    ((reazon-null-o s))
@@ -414,29 +406,13 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cdr-o s d)
       (reazon-list-o d)))))
 
-(reazon-defrel reazon-lol-o (s)
+(reazon-defrel reazon-append-o (l p out)
   (reazon-conde
-   ((reazon-null-o s))
-   ((reazon-fresh (a)
-      (reazon-car-o s a)
-      (reazon-list-o a))
-    (reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-lol-o d)))))
-
-(reazon-defrel reazon-twin-o (s)
-  (reazon-fresh (x)
-    (reazon-== s `(,x ,x))))
-
-(reazon-defrel reazon-lot-o (s)
-  (reazon-conde
-   ((reazon-null-o s))
-   ((reazon-fresh (a)
-      (reazon-car-o s a)
-      (reazon-twin-o a))
-    (reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-lot-o d)))))
+   ((reazon-null-o l) (reazon-== p out))
+   ((reazon-fresh (a d res)
+      (reazon-cons-o a d l)
+      (reazon-cons-o a res out)
+      (reazon-append-o d p res)))))
 
 (reazon-defrel reazon-member-o (x s)
   (reazon-conde
@@ -444,32 +420,6 @@ This will raise an error if the query has infinitely many solutions."
    ((reazon-fresh (d)
       (reazon-cdr-o s d)
       (reazon-member-o x d)))))
-
-(reazon-defrel reazon-proper-member-o (x s)
-  (reazon-conde
-   ((reazon-car-o s x)
-    (reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-list-o d)))
-   ((reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-proper-member-o x d)))))
-
-(reazon-defrel reazon-mem-o (x s out)
-  (reazon-conde
-   ((reazon-car-o s x) (reazon-== out s))
-   ((reazon-fresh (d)
-      (reazon-cdr-o s d)
-      (reazon-mem-o x d out)))))
-
-(reazon-defrel reazon-rember-o (x s out)
-  (reazon-conde
-   ((reazon-null-o s) (reazon-null-o out))
-   ((reazon-car-o s x) (reazon-cdr-o s out))
-   ((reazon-fresh (a d rec)
-      (reazon-cons-o a d s)
-      (reazon-cons-o a rec out)
-      (reazon-rember-o x d rec)))))
 
 (reazon-defrel reazon-next-to (x y s)
   (reazon-fresh (a d)

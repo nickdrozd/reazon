@@ -479,6 +479,16 @@
     (reazon-run 5 q
       (reazon-list-o `(a b c . ,q)))))
 
+(reazon-defrel reazon-lol-o (s)
+  (reazon-conde
+   ((reazon-null-o s))
+   ((reazon-fresh (a)
+      (reazon-car-o s a)
+      (reazon-list-o a))
+    (reazon-fresh (d)
+      (reazon-cdr-o s d)
+      (reazon-lol-o d)))))
+
 (ert-deftest reazon--test-lol-o ()
   (reazon--should-equal '(nil (nil) ((_0)) (nil nil) ((_0 _1)))
     (reazon-run 5 q
@@ -486,9 +496,23 @@
     (reazon-run 5 q
       (reazon-lol-o `((a b) (c d) . ,q)))))
 
+(reazon-defrel reazon-twin-o (s)
+  (reazon-fresh (x)
+    (reazon-== s `(,x ,x))))
+
 (ert-deftest reazon--test-twin-o ()
   (reazon--should-equal '(tofu)
     (reazon-run* q (reazon-twin-o `(,q tofu)))))
+
+(reazon-defrel reazon-lot-o (s)
+  (reazon-conde
+   ((reazon-null-o s))
+   ((reazon-fresh (a)
+      (reazon-car-o s a)
+      (reazon-twin-o a))
+    (reazon-fresh (d)
+      (reazon-cdr-o s d)
+      (reazon-lot-o d)))))
 
 (ert-deftest reazon--test-lot-o ()
   (reazon--should-equal '(nil ((_0 _0)) ((_0 _0) (_1 _1)))
@@ -513,6 +537,16 @@
     (reazon-run 3 s
       (reazon-member-o 'tofu s))))
 
+(reazon-defrel reazon-proper-member-o (x s)
+  (reazon-conde
+   ((reazon-car-o s x)
+    (reazon-fresh (d)
+      (reazon-cdr-o s d)
+      (reazon-list-o d)))
+   ((reazon-fresh (d)
+      (reazon-cdr-o s d)
+      (reazon-proper-member-o x d)))))
+
 (ert-deftest reazon--test-proper-member-o ()
   ;; The ordering here is different from what's in the book.
   (reazon--should-equal '((tofu) (tofu _0) (_0 tofu) (tofu _0 _1)
@@ -524,6 +558,13 @@
                           (tofu _0 _1 _2 _3 _4 _5 _6))
     (reazon-run 12 s
       (reazon-proper-member-o 'tofu s))))
+
+(reazon-defrel reazon-mem-o (x s out)
+  (reazon-conde
+   ((reazon-car-o s x) (reazon-== out s))
+   ((reazon-fresh (d)
+      (reazon-cdr-o s d)
+      (reazon-mem-o x d out)))))
 
 (ert-deftest reazon--test-mem-o ()
   (reazon--should-equal '((tofu d tofu e) (tofu e))
@@ -541,6 +582,15 @@
                           ((tofu . _0) (_1 _2 _3 _4 _5 _6 tofu . _0)))
     (reazon-run 9 (x y)
       (reazon-mem-o 'tofu `(a b tofu d tofu e . ,y) x))))
+
+(reazon-defrel reazon-rember-o (x s out)
+  (reazon-conde
+   ((reazon-null-o s) (reazon-null-o out))
+   ((reazon-car-o s x) (reazon-cdr-o s out))
+   ((reazon-fresh (a d rec)
+      (reazon-cons-o a d s)
+      (reazon-cons-o a rec out)
+      (reazon-rember-o x d rec)))))
 
 (ert-deftest reazon--test-rember-o ()
   ;; These tests confirm some behavior that seems pathological. If all
