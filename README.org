@@ -1,0 +1,377 @@
+* Reazon -- miniKanren for Emacs
+
+*Reazon* is an Emacs implementation of *miniKanren*, a small domain-specific logic programming language. Whereas languages like Elisp deal with /functions/ that take inputs and yield outputs, miniKanren deals with sets of values that satisfy /relations/. Every function is a relation, but not vice versa, since a relation might include the output of a function but not its inputs. In such a case, miniKanren would attempt to find inputs yielding the output, effectively running the function backwards.
+
+/THAT'S VAGUE. HOW ABOUT AN EXAMPLE?/
+
+Great idea. Consider this recursive definition for the function =append= [fn:1]:
+
+#+BEGIN_SRC emacs-lisp :exports both :results code
+;; Use `_append' rather than `append' to avoid clobbering the builtin.
+(defun _append (head tail)
+  (let ((out
+         (if (null head)
+             tail
+           (let* ((a (car head))
+                  (d (cdr head))
+                  (rec (_append d tail)))
+             (cons a rec)))))
+    out))
+
+(list
+ (_append '(1 2 3) '())
+ (_append '() '(4 5 6))
+ (_append '(1 2 3) '(4 5 6)))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+((1 2 3)
+ (4 5 6)
+ (1 2 3 4 5 6))
+#+END_SRC
+
+In that definition, we set up a variable =out= and then assign it one of two values: =tail= if =head= is null, or else the =cons= of the =car= of =head= and the recursive appending of the =cdr= of =head= onto =tail=.
+
+A miniKanren relation can be defined in the same way:
+
+#+BEGIN_SRC emacs-lisp :results silent
+(reazon-defrel appendo (head tail out)
+  (reazon-conde
+   ((reazon-== head '()) (reazon-== out tail))
+   ((reazon-fresh (a d rec)
+      (reazon-== head (cons a d))
+      (reazon-== out (cons a rec))
+      (appendo d tail rec)))))
+#+END_SRC
+
+Again, we have variables =head=, =tail=, and =out=, and =out= is made to be =tail= when =head= is null and the =cons= of the =car= of =head= and the recursive appending of the =cdr= of =head= onto =tail= when it isn't.
+
+/THEY LOOK LIKE THE SAME DEFINITION./
+
+Indeed, =appendo= can be used just like =append=:
+
+#+BEGIN_SRC emacs-lisp :exports both :results code
+(let ((r1
+       (reazon-run* out
+         (appendo '(1 2 3) '() out)))
+      (r2
+       (reazon-run* out
+         (appendo '() '(4 5 6) out)))
+      (r3
+       (reazon-run* out
+         (appendo '(1 2 3) '(4 5 6) out))))
+  (mapcar #'car (list r1 r2 r3)))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+((1 2 3)
+ (4 5 6)
+ (1 2 3 4 5 6))
+#+END_SRC
+
+/SO WHAT'S THE DIFFERENCE? AND WHY IS =out= AN INPUT?/
+
+A value can be supplied for =out=, in which case appropriate values will be found for =head= and =tail=:
+
+#+BEGIN_SRC emacs-lisp :exports both :results code
+(reazon-run* (head tail)
+  (appendo head tail '(1 2 3 4 5 6)))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+((nil
+  (1 2 3 4 5 6))
+ ((1)
+  (2 3 4 5 6))
+ ((1 2)
+  (3 4 5 6))
+ ((1 2 3)
+  (4 5 6))
+ ((1 2 3 4)
+  (5 6))
+ ((1 2 3 4 5)
+  (6))
+ ((1 2 3 4 5 6)
+  nil))
+#+END_SRC
+
+/SO THE INPUTS ARE OUTPUTS?/
+
+They can be. They can also be supplied along with the "output", and they can even be supplied only partially:
+
+#+BEGIN_SRC emacs-lisp :exports both :results code
+(reazon-run* (head tail out)
+  (reazon-fresh (a c d)
+    (reazon-== head `(,a 2 ,c ,d)))
+  (reazon-fresh (a b e)
+    (reazon-== out `(,a ,b 3 4 ,e 6)))
+  (appendo head tail out))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+(((_0 2 3 4)
+  (_1 6)
+  (_0 2 3 4 _1 6)))
+#+END_SRC
+
+/NOT BAD! BUT APPENDING LISTS TOGETHER ISN'T A VERY EXCITING APPLICATION./
+
+Consider the function =eval=, commonly found in languages like Python and Javascript. It takes as input an expression and returns as output the value to which that expression evaluates. The relational equivalent of =eval= would be the relation =evalo=, which would associate expressions with values. Supposing we had such a relation, what be the result of the following query?
+
+#+BEGIN_SRC emacs-lisp
+(reazon-run 1 q
+  (evalo q q))
+#+END_SRC
+
+/UHH.../
+
+Right, we would get a /quine/, that is, an expression that evaluates to itself! And supposing we had a disequality operator =reazon-!== to stipulate that two expressions are distinct, what would we get from running this?
+
+#+BEGIN_SRC emacs-lisp
+(reazon-run 1 (p q)
+  (reazon-!= p q)
+  (evalo p q)
+  (evalo q p))
+#+END_SRC
+
+/TWO DISTINCT EXPRESSIONS THAT EVALUATE TO EACH OTHER?/
+
+Yes, two /twines/!
+
+/WOW, REAZON CAN DO ALL THAT?/
+
+No. Currently Reazon lacks the ability to constrain values, or really to handle negation at all. I mean, the language is Turing-complete, so it's certainly possible in some sense, but it can't be done in a straightforward way.
+
+* Installation
+For now, the best way to run Reazon is to open the file [[https://github.com/nickdrozd/reazon/blob/master/reazon.el][reazon.el]] and run the command =eval-buffer=. After that, all the Reazon functions, macros, and relations will be loaded up and you can start writing some queries!
+
+*IMPORTANT NOTE: Reazon relations must be defined in a context with lexical binding.* To enable lexical binding, run =(setq lexical-binding t)= or put =;; -*- lexical-binding: t; -*-= at the top of a source file. *I'm serious, Reazon will not work without lexical binding.*
+
+* FAQ
+** Did you come up with miniKanren all by yourself?
+No. miniKanren is described in detail and implemented in the book [[https://books.google.com/books?id=HulPDwAAQBAJ&printsec=frontcover&dq=reasoned+schemer#v=onepage&q&f=false][The Reasoned Schemer]] (a sequel to /The Little Schemer/) by Byrd, Friedman, Kiselyov, and Hemann. Reazon is a straightforward adaptation to Elisp of the code from the second edition.
+
+** So you just copied some code out of a book?
+To some extent, yes. The big differences between the code here and the code there are that 1) the macros are written with =defmacro= instead of =define-syntax=, and 2) certain control functions are written with explicit iteration instead of recursion, since Elisp lacks tail-call elimination.
+
+** How does this compare to Clojure's [[https://github.com/clojure/core.logic][core.logic]]?
+
+=core.logic= is a Clojure implementation of miniKanren. It's significantly more developed than Reazon (I mean, like way more developed), but they are the same in spirit. If you need to use miniKanren for something serious, use that, not this.
+
+** Why does "Reazon" have a "z" in it? That's stupid.
+
+Maybe. Initially it was just called "Reason" (with an "s") after *The Reasoned Schemer*, but then I discovered to my dismay that there was already a package called "Reason" on Melpa (a major mode for some language). Changing the "s" to "z" seemed like a fine way around that roadblock, with the added benefit of making the name "pop".
+
+** Why are all the relations named with =o= at the end (=conso=, =listo=, etc)? That's ugly and weird.
+
+I don't know. That convention was established long before I came around miniKanren. In the context of Emacs, however, it actually fits in with another ugly convention, namely that of ending the names of test functions with =p= (=consp=, =listp=, etc). This suggests that, for example, =conso= is somehow similar to =consp=, which is accurate.
+
+** I ran a query, but I got =*** Eval error ***  Lisp nesting exceeds ‘max-lisp-eval-depth’=.
+
+The interface operator =reazon-run*= searches for as many solutions as it can find. If your query has infinitely many solutions, it will keep searching until it blows the stack. For instance, there are infinitely many triples =x, y, z= such that =x= and =y= append to form =z=, so the following query will error:
+
+#+BEGIN_SRC emacs-lisp
+(reazon-run* (x y z)
+  (appendo x y z))
+#+END_SRC
+
+Try using =reazon-run= (no asterisk) with a count to limit the search:
+
+#+BEGIN_SRC emacs-lisp :results code :exports both
+(reazon-run 3 (x y z)
+  (appendo x y z))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+((nil _0 _0)
+ ((_0)
+  _1
+  (_0 . _1))
+ ((_0 _1)
+  _2
+  (_0 _1 . _2)))
+#+END_SRC
+
+** I defined a relation and ran a query, but I got =*** Eval error ***  Symbol’s value as variable is void: x=. I double-checked and I'm sure I wrote the definition correctly.
+
+Reazon relations need to be defined in lexical environments. This can be set in an interpreter like =ielm= by running =(setq lexical-binding t)= or by adding =;; -*- lexical-binding: t; -*-= to the top of a source file.
+
+I learned this the hard way.
+
+In =ielm=:
+
+#+BEGIN_SRC emacs-lisp
+> (reazon-defrel _five (x) (reazon-== x 5))
+_five
+> (reazon-run* q (_five q))
+,*** Eval error ***  Symbol’s value as variable is void: x
+> (setq lexical-binding t)
+t
+> (reazon-run* q (_five q))
+,*** Eval error ***  Symbol’s value as variable is void: x
+> (reazon-defrel _five (x) (reazon-== x 5))
+_five
+> (reazon-run* q (_five q))
+(5)
+#+END_SRC
+
+** Is the equality operator ~(reazon-)==~ an assertion that two things are the same, or an assignment that makes two things the same?
+
+That is a deep question.
+
+** It's a pain in the ass to use the =reazon-= namespace prefix all the time, especially for an operator as common as ~reazon-==~.
+
+I know. I'm working on it.
+
+** Can Reazon be used to solve dusty old logic puzzles?
+
+Yes. Consider the following dusty old logic puzzle[fn:2]:
+
+#+BEGIN_QUOTE
+Five schoolgirls sat for an examination. Their parents -- so they thought -- showed an undue degree of interest in the result. They therefore agreed that, in writing home about the examination, each girl should make one true statement and one untrue one. The following are the relevant passages from their letters:
+
+  > Betty: "Kitty was second in the examination. I was only third."
+
+  > Ethel: "You'll be glad to hear that I was on top. Joan was second."
+
+  > Joan: "I was third, and poor old Ethel was bottom."
+
+  > Kitty: "I came out second. Mary was only fourth."
+
+  > Mary: "I was fourth. Top place was taken by Betty."
+
+What in fact was the order in which the five girls were placed?
+#+END_QUOTE
+
+Representing the exam results as a five element list ordered from first to last, this puzzle can be transformed into the following query:
+
+#+BEGIN_SRC emacs-lisp :exports both :results code
+(reazon-run* q
+  (reazon-fresh (a b c d e)
+    ;; Betty: "Kitty was second in the examination. I was only third."
+    (reazon-disj
+     (reazon-== q `(,a kitty ,c ,d ,e))
+     (reazon-== q `(,a ,b betty ,d ,e)))
+    ;; Ethel: "You'll be glad to hear that I was on top. Joan was second."
+    (reazon-disj
+     (reazon-== q `(ethel ,b ,c ,d ,e))
+     (reazon-== q `(,a joan ,c ,d ,e)))
+    ;; Joan: "I was third, and poor old Ethel was bottom."
+    (reazon-disj
+     (reazon-== q `(,a ,b joan ,d ,e))
+     (reazon-== q `(,a ,b ,c ,d ethel)))
+    ;; Kitty: "I came out second. Mary was only fourth."
+    (reazon-disj
+     (reazon-== q `(,a kitty ,c ,d ,e))
+     (reazon-== q `(,a ,b ,c mary ,e)))
+    ;; Mary: "I was fourth. Top place was taken by Betty."
+    (reazon-disj
+     (reazon-== q `(,a ,b ,c mary ,e))
+     (reazon-== q `(betty ,b ,c ,d ,e))))
+  (reazon-subseto '(betty ethel joan kitty mary) q))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+((ethel kitty joan mary betty)
+ (ethel kitty joan mary betty)
+ (kitty joan betty mary ethel))
+#+END_SRC
+
+That query yielded multiple results (two, in fact, with one duplicate) because Reazon lacks a disequality operator, making it difficult to encode negation. The puzzle says that each girl made one true statement and one false statement. Our use of the disjunction operator requires that at least one of the two statements be true, but doesn't preclude them from both being true. Thus the query fails to pin down the correct answer.
+
+With a little bit of boring manual labor, it's possible to get something that works:
+
+#+BEGIN_SRC emacs-lisp :exports both :results code
+(reazon-run* q
+  (reazon-fresh (a b c d e)
+    ;; Betty: "Kitty was second in the examination. I was only third."
+    (reazon-disj
+     (reazon-== q `(,a kitty ,c ,d ,e))
+     (reazon-== q `(,a ,b betty ,d ,e)))
+    ;; Ethel: "You'll be glad to hear that I was on top. Joan was second."
+    (reazon-disj
+     (reazon-== q `(ethel ,b ,c ,d ,e))
+     (reazon-== q `(,a joan ,c ,d ,e)))
+    ;; Joan: "I was third, and poor old Ethel was bottom."
+    (reazon-disj
+     (reazon-== q `(,a ,b joan ,d ,e))
+     (reazon-== q `(,a ,b ,c ,d ethel)))
+    ;; Kitty: "I came out second. Mary was only fourth."
+    (reazon-disj
+     ;; Explicity enumerate possibilities to simulate negation.
+     (reazon-disj
+      (reazon-== q `(mary kitty ,c ,d ,e))
+      (reazon-== q `(,a kitty mary ,d ,e))
+      (reazon-== q `(,a kitty ,c ,d mary)))
+     (reazon-disj
+      (reazon-== q `(kitty ,b ,c mary ,e))
+      (reazon-== q `(,a ,b kitty mary ,e))
+      (reazon-== q `(,a ,b ,c mary kitty))))
+    ;; Mary: "I was fourth. Top place was taken by Betty."
+    (reazon-disj
+     (reazon-== q `(,a ,b ,c mary ,e))
+     (reazon-== q `(betty ,b ,c ,d ,e))))
+  (reazon-subseto '(betty ethel joan kitty mary) q))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+((kitty joan betty mary ethel))
+#+END_SRC
+
+See [[https://nickdrozd.github.io/2018/08/07/reazon-logic.html][Solving Logic Puzzles in Emacs with Reazon]].
+
+** Can Reazon be used as a Sudoku solver?
+
+Yes. See the included file [[https://github.com/nickdrozd/reazon/blob/master/reazon-sudoku.el][reazon-sudoku.el]].
+
+** Can Reazon be used as a theorem prover?
+
+Yes. See:
+- [[https://nickdrozd.github.io/2018/08/14/modal-sentences.html][Generating Sentences of Modal Logic]]
+- [[https://nickdrozd.github.io/2018/08/15/prop-proofs.html][Generating Propositional Logic Proofs]]
+
+** Can Reazon be used as part of a static analyzer / linter?
+
+Sure. Suppose you wanted to write a rule that says any expression of the form =(if condition (progn body-1 body-2 ...))= should be rewritten as =(when condition body-1 body-2 ...)= [fn:3]. This could be encoded as something like the following:
+
+#+BEGIN_SRC emacs-lisp
+(reazon-defrel if-without-else-becomes-when (exp out)
+  (reazon-fresh (condition body)
+    (reazon-== exp `(if ,condition (progn ,@body)))
+    (reazon-== out `(when ,condition ,@body))))
+#+END_SRC
+
+Transforming an expression is merely a matter of running the relation rule against it:
+
+#+BEGIN_SRC emacs-lisp :exports both :results code
+(let ((exp '(if condition (progn body-1 body-2))))
+  (reazon-run* q (if-without-else-becomes-when exp q)))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+((when condition body-1 body-2))
+#+END_SRC
+
+** Can Reazon be used as part of a scheduler, say, in conjuction with Org Mode?
+
+That sounds like a neat idea!
+
+** Does Reazon support Prolog-style database queries?
+
+Not as currently implemented, no. Maybe in the future something like that can be added, though it isn't a high priority.
+
+* Footnotes
+
+[fn:1] This example is used by every introduction to logic programming I've ever seen, including those for Prolog.
+
+[fn:2] This is [[https://mitpress.mit.edu/sites/default/files/sicp/full-text/book/book-Z-H-28.html#%25_thm_4.42][SICP exercise 4.42]].
+
+[fn:3] See the [[https://github.com/bbatsov/emacs-lisp-style-guide#syntax][Emacs Lisp Style Guide]].
