@@ -51,6 +51,13 @@ collected so far.
 Consider let-binding this around your call to `reazon-run'
 instead of setqing it.")
 
+(defvar reazon-occurs-check t
+  "Whether to run the `occurs' check during unification.
+Circular queries are bad. It is possible to detect them, but it isn't
+cheap. Setting the flag to nil grants the programmer faster queries in
+exchange for assuming the responsibility of ensuring correctness on
+their own.")
+
 ;; -- Variables --
 
 ;; Reazon variables need to be distinct from Lisp symbols. They are
@@ -114,7 +121,7 @@ indicate substitution failure.")
 
 (defun reazon--extend (var val sub)
   "Associate VAR and VAL in SUB."
-  (if (reazon--occurs-p var val sub)
+  (if (and reazon-occurs-check (reazon--occurs-p var val sub))
       reazon--false
     (cons `(,var . ,val) sub)))
 
