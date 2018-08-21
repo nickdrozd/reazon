@@ -1,0 +1,15 @@
+* 0.2
+** Added
+- Relations: listo, membero, subseto, set-equalo, adjeacento, and precedeso
+- Sudoku solvers
+- Profiler and benchmarker
+
+** Changed
+- Renamed relations to end with =o= rather than =-o=
+
+** Fixed
+- Rewrote internal control functions to avoid recusion, fixing an OOM bug
+- Empty conj/disj clause bug
+
+* 0.1
+First release
