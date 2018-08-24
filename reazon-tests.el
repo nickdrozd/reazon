@@ -747,8 +747,10 @@
 
 (ert-deftest reazon--test-sudoku-solve-4x4 ()
   (reazon--should-equal '((2 3 1 4 4 1 3 2 3 2 4 1 1 4 2 3))
-    (reazon-sudoku-solve-4x4 (a2 3) (b1 4) (b4 2) (c4 1) (d3 2))))
+    (reazon-sudoku-solve-4x4 (a2 3) (b1 4) (b4 2) (c4 1) (d3 2)))
 
+  (reazon--should-equal '((1 2 3 4 4 1 2 3 3 4 1 2 2 3 4 1))
+    (reazon-sudoku-solve-4x4 (a1 1) (a2 2) (a3 3) (a4 4) (b1 4) (b4 3) (c4 2) (d3 4))))
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here
