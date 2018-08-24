@@ -55,17 +55,13 @@ solved instances will be generated."
           coordinate-value-pairs)
 
        (reazon-subseto range `(,a1 ,a2 ,a3 ,a4))
-       (reazon-subseto range `(,a1 ,b1 ,c1 ,d1))
-       (reazon-subseto range `(,a1 ,a2 ,b1 ,b2))
        (reazon-subseto range `(,b1 ,b2 ,b3 ,b4))
+       (reazon-subseto range `(,c1 ,c2 ,c3 ,c4))
+       (reazon-subseto range `(,d1 ,d2 ,d3 ,d4))
+       (reazon-subseto range `(,a1 ,b1 ,c1 ,d1))
        (reazon-subseto range `(,a2 ,b2 ,c2 ,d2))
        (reazon-subseto range `(,a3 ,b3 ,c3 ,d3))
-       (reazon-subseto range `(,a3 ,a4 ,b3 ,b4))
-       (reazon-subseto range `(,a4 ,b4 ,c4 ,d4))
-       (reazon-subseto range `(,c1 ,c2 ,c3 ,c4))
-       (reazon-subseto range `(,c1 ,c2 ,d1 ,d2))
-       (reazon-subseto range `(,d1 ,d2 ,d3 ,d4))
-       (reazon-subseto range `(,c3 ,c4 ,d3 ,d4)))))
+       (reazon-subseto range `(,a4 ,b4 ,c4 ,d4)))))
 
 
 (defmacro reazon-sudoku-solve-9x9 (&rest coordinate-value-pairs)
