@@ -91,7 +91,54 @@
     (reazon--should-equal 'e
       (reazon--walk y (reazon--extend x 'e `((,z . ,x) (,y . ,z)))))))
 
-(ert-deftest reazon--unit-unification ()
+(ert-deftest reazon--unit-unify ()
+  (reazon--with-variables (x y z)
+    (reazon--should-equal `((,y . 1) (,x . 2))
+      (reazon--unify `(,x + 1) `(2 + ,y) '()))
+    (reazon--should-equal `((,x . ,y))
+      (reazon--unify x y '()))
+    (reazon--should-equal `((,x . ,y))
+      (reazon--unify `(,x ,x) `(,y ,y) '())
+      (reazon--unify `(,x ,x ,x) `(,y ,y ,y) '())
+      (reazon--unify `(,x ,y) `(,y ,x) '()))
+    (reazon--should-equal `((,y . a) (,x . ,y))
+      (reazon--unify `(,x ,y a) `(,y ,x ,x) '()))
+    (reazon--should-equal reazon--false
+      (reazon--unify x `(f ,x) '())
+      (reazon--unify `(,x ,y) `((f ,y) (f ,x)) '())
+      (reazon--unify `(,x ,y ,z) `((,y ,z) (,x ,z) (,x ,y)) '()))
+
+    ;; PAIP ex 11.5
+
+    ;; At least six books (Abelson and Sussman 1985, ...) present
+    ;; unification algorithms with a common error. They all have
+    ;; problems unifying `(?x ?y a)' with `(?y ?x ?x)'. Some of these
+    ;; texts assume that `unify' will be called in a context where no
+    ;; variables are shared between the two arguments. However, they
+    ;; are still suspect to the bug, as the following example points
+    ;; out:
+
+    (reazon--should-equal `((,x . a) (,y . ,x) (,z ,x ,y a))
+      (reazon--unify `(f (,x ,y a) (,y ,x ,x)) `(f ,z ,z) '()))
+
+    ;; Despite this subtle bug, I highly recommend each of the books
+    ;; to the reader. It is interesting to compare different
+    ;; implementations of the same algorithm. It turns out that there
+    ;; are more similarities than differences. This indicates two
+    ;; things: (1) there is a generally agreed-upon style for writing
+    ;; these functions, and (2) good programmers sometimes take
+    ;; advantage of opportunities to look at others' code.
+
+    ;; The question is: Can you give an informal proof of the
+    ;; correctness of the algorithm presented in this chapter? Start
+    ;; by making a clear statement of the specification. Apply that to
+    ;; the other algorithms, and show where they go wrong. Then see if
+    ;; you can prove that the unify function in this chapter is
+    ;; correct. Failing a complete proof, can you at least prove that
+    ;; the algorithm will always terminate?
+    ))
+
+(ert-deftest reazon--unit-primitives ()
   (reazon--should-equal '(())
     (reazon-!S '())
     (funcall (reazon-== 4 4) '()))
