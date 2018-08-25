@@ -749,6 +749,50 @@
   (reazon--should-equal '((2 3 1 4 4 1 3 2 3 2 4 1 1 4 2 3))
     (reazon-sudoku-solve-4x4 (a2 3) (b1 4) (b4 2) (c4 1) (d3 2))))
 
+(reazon-defrel reazon-likes (a b)
+  (reazon-conde
+   ((reazon-== a 'kim) (reazon-== b 'robin))
+   ((reazon-== a 'sandy) (reazon-== b 'lee))
+   ((reazon-== a 'sandy) (reazon-== b 'kim))
+   ((reazon-== a 'robin) (reazon-== b 'cats))
+   ;; ((reazon-== a 'sandy) (reazon-likes b 'cats))
+   ((reazon-fresh (x)
+      (reazon-== a 'sandy)
+      (reazon-== b x)
+      (reazon-likes x 'cats)))
+   ;; ((reazon-== a 'kim) (reazon-likes b 'lee) (reazon-likes b 'kim))
+   ((reazon-fresh (x)
+      (reazon-== a 'kim)
+      (reazon-== b x)
+      (reazon-likes x 'lee)
+      (reazon-likes x 'kim)))
+   ;; ((reazon-== a b))
+   ((reazon-fresh (x)
+      (reazon-== a x)
+      (reazon-== b x)))))
+
+(ert-deftest reazon--test-paip-likes ()
+  "This is an example from the chapter on Prolog in Norvig's PAIP."
+  (reazon--should-equal '(lee kim sandy robin sandy cats)
+    (reazon-run* who
+      (reazon-likes 'sandy who)))
+  (reazon--should-equal '(sandy sandy kim)
+    (reazon-run* who
+      (reazon-likes who 'sandy)))
+  (reazon--should-equal '()
+    (reazon-run* q
+      (reazon-likes 'robin 'lee)))
+  (reazon--should-equal
+      '((sandy kim)
+        (_0 _0)
+        (sandy sandy)
+        (sandy sandy)
+        (sandy sandy)
+        (kim sandy))
+    (reazon-run* (x y)
+      (reazon-likes x y)
+      (reazon-likes y x))))
+
 
 (provide 'reazon-tests)
 ;;; reazon-tests.el ends here
