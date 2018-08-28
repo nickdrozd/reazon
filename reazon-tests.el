@@ -671,6 +671,41 @@
       (reazon-== r 'b)
       (reazon-rembero r '(a b c) '(a b c)))))
 
+(ert-deftest reazon--test-precedeso ()
+  "Tests for precedeso, adjacento, and immediately-precedeso."
+  (let ((s '(1 2 3 4 5)))
+    (reazon--should-equal '(_0)
+      (reazon-run* q
+        (reazon-immediately-precedeso 1 2 s)
+        (reazon-immediately-precedeso 2 3 s)
+        (reazon-immediately-precedeso 3 4 s)
+        (reazon-immediately-precedeso 4 5 s)
+        (reazon-precedeso 1 2 s)
+        (reazon-precedeso 1 3 s)
+        (reazon-precedeso 1 4 s)
+        (reazon-precedeso 1 5 s)
+        (reazon-precedeso 2 3 s)
+        (reazon-precedeso 2 4 s)
+        (reazon-precedeso 2 5 s)
+        (reazon-adjacento 1 2 s)
+        (reazon-adjacento 2 1 s)
+        (reazon-adjacento 2 3 s)
+        (reazon-adjacento 3 2 s)
+        (reazon-adjacento 3 4 s)
+        (reazon-adjacento 4 3 s)
+        (reazon-adjacento 4 5 s)
+        (reazon-adjacento 5 4 s)))
+    (reazon--should-equal '()
+      (reazon-run* q (reazon-immediately-precedeso 1 3 s))
+      (reazon-run* q (reazon-immediately-precedeso 1 4 s))
+      (reazon-run* q (reazon-immediately-precedeso 1 5 s))
+      (reazon-run* q (reazon-immediately-precedeso 3 2 s))
+      (reazon-run* q (reazon-precedeso 3 2 s))
+      (reazon-run* q (reazon-precedeso 4 2 s))
+      (reazon-run* q (reazon-precedeso 5 2 s))
+      (reazon-run* q (reazon-adjacento 1 4 s))
+      (reazon-run* q (reazon-adjacento 5 3 s)))))
+
 ;; Performance
 
 (ert-deftest reazon--test-memory-smoke ()
@@ -735,7 +770,7 @@
         (reazon-fresh (ho1 ho2 nt1 nt2 dr1 sm1 sm2 pt1 pt2)
           (reazon-== ho1 `(ivr ,nt1 ,dr1 ,sm1 ,pt1))
           (reazon-== ho2 `(grn ,nt2 cof ,sm2 ,pt2))
-          (reazon-precedeso ho1 ho2 q))
+          (reazon-immediately-precedeso ho1 ho2 q))
 
         ;; 11 The man who smokes Chesterfields lives in the house next to the man with the fox.
         (reazon-fresh (ho1 ho2 co1 co2 nt1 nt2 dr1 dr2 sm2 pt1)

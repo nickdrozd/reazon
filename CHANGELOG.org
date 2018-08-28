@@ -1,3 +1,7 @@
+* 0.3 (unreleased)
+** Fixed
+- `precedeso` was really doing `immediately-precedeso`. The latter was added as a separate function, and the former was fixed to be appropriately general.
+
 * 0.2
 ** Added
 - Relations: listo, membero, subseto, set-equalo, adjeacento, and precedeso

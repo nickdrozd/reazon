@@ -421,20 +421,24 @@ This will raise an error if the query has infinitely many solutions."
       (reazon-cdro s d)
       (reazon-membero x d)))))
 
-(reazon-defrel reazon-adjacento (x y s)
-  (reazon-fresh (a d)
-    (reazon-conso a d s)
-    (reazon-conde
-     ((reazon-== x a) (reazon-caro d y))
-     ((reazon-== y a) (reazon-caro d x))
-     ((reazon-adjacento x y d)))))
-
 (reazon-defrel reazon-precedeso (x y s)
   (reazon-fresh (a d)
     (reazon-conso a d s)
     (reazon-conde
-     ((reazon-== x a) (reazon-caro d y))
+     ((reazon-== x a) (reazon-membero y d))
      ((reazon-precedeso x y d)))))
+
+(reazon-defrel reazon-immediately-precedeso (x y s)
+  (reazon-fresh (a d)
+    (reazon-conso a d s)
+    (reazon-conde
+     ((reazon-== x a) (reazon-caro d y))
+     ((reazon-immediately-precedeso x y d)))))
+
+(reazon-defrel reazon-adjacento (x y s)
+  (reazon-disj
+   (reazon-immediately-precedeso x y s)
+   (reazon-immediately-precedeso y x s)))
 
 (reazon-defrel reazon-subseto (subset set)
   (reazon-conde
