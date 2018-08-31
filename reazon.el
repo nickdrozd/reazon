@@ -4,8 +4,8 @@
 
 ;; Author: Nick Drozd <nicholasdrozd@gmail.com>
 ;; URL: https://github.com/nickdrozd/reazon
-;; Version: 0.1
-;; Package-Requires: ((emacs "24"))
+;; Version: 0.2
+;; Package-Requires: ((emacs "26"))
 ;; Keywords: languages, extensions, lisp
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -34,10 +34,6 @@
 ;; * reazon-run*
 
 ;;; Code:
-
-(when (< emacs-major-version 26)
-  (require 'cl-lib)
-  (defalias 'gensym 'cl-gensym))
 
 ;; -- Variables --
 

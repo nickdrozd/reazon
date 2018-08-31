@@ -151,6 +151,21 @@ For now, the best way to run Reazon is to open the file [[https://github.com/nic
 
 *IMPORTANT NOTE: Reazon relations must be defined in a context with lexical binding.* To enable lexical binding, run =(setq lexical-binding t)= or put =;; -*- lexical-binding: t; -*-= at the top of a source file. *I'm serious, Reazon will not work without lexical binding.*
 
+** Emacs Version
+Because it relies on lexical binding, Reazon absolutely requires Emacs version 24+. It also uses the function =gensym= in its macros. This was added as a builtin function in Emacs 26, so running Reazon as-is requires at least that. However, =gensym= existed in other forms prior to 26, so Reazon can also be run in versions 24 and 25 by adding one of the following expressions:
+
+#+BEGIN_SRC emacs-lisp
+(progn
+  (require 'cl-lib)
+  (defalias 'gensym 'cl-gensym))
+#+END_SRC
+
+or
+
+#+BEGIN_SRC emacs-lisp
+(require 'cl)
+#+END_SRC
+
 * FAQ
 ** Did you come up with miniKanren all by yourself?
 No. miniKanren is described in detail and implemented in the book [[https://books.google.com/books?id=HulPDwAAQBAJ&printsec=frontcover&dq=reasoned+schemer#v=onepage&q&f=false][The Reasoned Schemer]] (a sequel to /The Little Schemer/) by Byrd, Friedman, Kiselyov, and Hemann. Reazon is a straightforward adaptation to Elisp of the code from the second edition.
