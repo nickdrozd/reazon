@@ -830,6 +830,7 @@
 (ert-deftest reazon--test-sudoku-solve-4x4 ()
   (reazon--should-equal '((2 3 1 4 4 1 3 2 3 2 4 1 1 4 2 3))
     (reazon-sudoku-solve-4x4 (a2 3) (b1 4) (b4 2) (c4 1) (d3 2))))
+    (reazon-sudoku-solve-4x4 (a2 3) (b1 4) (b4 2) (c4 1) (d3 2)))
 
 (reazon-defrel reazon-likes (a b)
   (reazon-conde
