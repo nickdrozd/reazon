@@ -381,7 +381,51 @@ That sounds like a neat idea!
 
 ** Does Reazon support Prolog-style database queries?
 
-Not as currently implemented, no. Maybe in the future something like that can be added, though it isn't a high priority.
+Not directly, but it's possible to simulate them. In Prolog, a /goal/ is a /predicate/ applied to some arguments, and a predicate is defined by a set of one or more /clauses/, where a clause is list of one or more goals. A /fact/ is a clause consisting of a single goal and a /rule/ is a clause consisting of two or more goals. The first goal of a rule is called the /head/ and the rest are collectively called the /body/. (Actually, we can simply define a fact as a rule with an empty body). The head of a rule holds when each goal in its body does, and a predicate holds when any of its clauses do.
+
+Now, suppose we want to define the predicate =likes= [fn:4]. There are some primitive facts about who likes whom:
+
+#+BEGIN_SRC
+likes(kim, robin)
+likes(sandy, lee)
+likes(sandy, kim)
+likes(robin, cats)
+likes(?x, ?x)
+#+END_SRC
+
+And there are some rules extending the =likes= predicate:
+
+#+BEGIN_SRC
+likes(sandy, ?x) :- likes(?x, cats)
+likes(kim, ?x) :- likes(?x, lee), likes(?x, kim)
+#+END_SRC
+
+A predicate holds when any of its clauses do, and a clause holds when each goal in its body does. Thus the truth of a predicate is defined by a disjunction of conjunctions. Well, that's exactly what =conde= does!
+
+#+BEGIN_SRC emacs-lisp
+(reazon-defrel likes (a b)
+  (reazon-conde
+   ((reazon-== a 'kim) (reazon-== b 'robin))
+   ((reazon-== a 'sandy) (reazon-== b 'lee))
+   ((reazon-== a 'sandy) (reazon-== b 'kim))
+   ((reazon-== a 'robin) (reazon-== b 'cats))
+   ((reazon-fresh (x)
+      (reazon-== a 'sandy)
+      (reazon-== b x)
+      (likes x 'cats)))
+   ((reazon-fresh (x)
+      (reazon-== a 'kim)
+      (reazon-== b x)
+      (likes x 'lee)
+      (likes x 'kim)))
+   ((reazon-fresh (x)
+      (reazon-== a x)
+      (reazon-== b x)))))
+#+END_SRC
+
+Defining a predicate in this way makes it inconvenient to update it with new rules and facts, but it is nonetheless logically sufficient.
+
+See the test file [[https://github.com/nickdrozd/reazon/blob/master/test/reazon-test-prolog.el][test/reazon-test-prolog.el]] for an extended example involving a personnel records database.
 
 * Footnotes
 
@@ -390,3 +434,5 @@ Not as currently implemented, no. Maybe in the future something like that can be
 [fn:2] This is [[https://mitpress.mit.edu/sites/default/files/sicp/full-text/book/book-Z-H-28.html#%25_thm_4.42][SICP exercise 4.42]].
 
 [fn:3] See the [[https://github.com/bbatsov/emacs-lisp-style-guide#syntax][Emacs Lisp Style Guide]].
+
+[fn:4] This example comes from the [[https://github.com/norvig/paip-lisp/blob/master/docs/chapter11.md][logic programming chapter of PAIP]].
