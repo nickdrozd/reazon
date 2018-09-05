@@ -144,6 +144,81 @@
         (reazon-== hou `(,col ,nat ,drn ,smk zeb))
         (reazon-membero hou q)))))
 
+(ert-deftest reazon-test-puzzle-interrogation ()
+  ;; Three men were once arrested for a crime which beyond a shadow of
+  ;; a doubt had been committed by one of them. Preliminary
+  ;; questioning disclosed the curious fact that one of the suspects
+  ;; was a highly respected judge, one just an average citizen, and
+  ;; one a notorious crook. In what follows they will be referred to
+  ;; as Brown, Jones, and Smith, though not necessarily respectively.
+  ;; Each man made two statements to the police, which were in effect
+  ;;
+  ;; Brown:
+  ;;   I didn't do it.
+  ;;   Jones didn't do it.
+  ;;
+  ;; Jones:
+  ;;   Brown didn't do it.
+  ;;   Smith did it.
+  ;;
+  ;; Smith:
+  ;;   I didn't do it.
+  ;;   Brown did it.
+  ;;
+  ;; Further investigation showed, as might have been expected, that
+  ;; both statements made by the judge were true, both statements made
+  ;; by the criminal were false, and of the two statements made by the
+  ;; average man one was true and one was false.
+  ;;
+  ;; Which of the three men was the judge, the average citizen, the
+  ;; crook? And who committed the crime?
+
+  (reazon--should-equal '(((brown a y) (jones c n) (smith j n)))
+    (reazon-run* q
+      ;; s(tatus): j(udge), a(verage citizen), c(rook)
+      ;; v(erdict): y(es), n(o)
+      (reazon-fresh (bs bv js jv ss sv)
+
+        (reazon-== q `((brown ,bs ,bv) (jones ,js ,jv) (smith ,ss ,sv)))
+
+        (reazon-subseto '(j a c) `(,bs ,js ,ss))
+
+        ;; This feels inelegant.
+        (reazon-membero `(,bv ,jv ,sv) '((y n n) (n y n) (n n y)))
+
+        (reazon-conde
+         ;; Brown is the judge.
+         ((reazon-== `(,bs ,bv jv) '(j n n)))
+         ;; Brown is the crook.
+         ((reazon-== `(,bs ,bv ,jv) '(c y y)))
+         ;; Brown is the average citizen.
+         ((reazon-== bs 'a)
+          (reazon-disj
+           (reazon-== `(,bv ,jv) '(y n))
+           (reazon-== `(,bv ,jv) '(n y)))))
+
+        (reazon-conde
+         ;; Jones is the judge.
+         ((reazon-== `(,js ,bv ,sv) '(j n y)))
+         ;; Jones is the crook.
+         ((reazon-== `(,js ,bv ,sv) '(c y n)))
+         ;; Jones is the average citizen.
+         ((reazon-== js 'a)
+          (reazon-disj
+           (reazon-== `(,bv ,sv) '(n n))
+           (reazon-== `(,bv ,sv) '(y y)))))
+
+        (reazon-conde
+         ;; Smith is the judge.
+         ((reazon-== `(,ss ,sv ,bv) '(j n y)))
+         ;; Smith is the crook.
+         ((reazon-== `(,ss ,sv ,bv) '(c y n)))
+         ;; Smith is the average citizen.
+         ((reazon-== ss 'a)
+          (reazon-disj
+           (reazon-== `(,sv ,bv) '(n n))
+           (reazon-== `(,sv ,bv) '(y n)))))))))
+
 
 (provide 'reazon-test-puzzle)
 ;;; reazon-test-puzzle.el ends here
