@@ -237,6 +237,33 @@ This primitive goal succeeds if they both do."
      goal-2
      (funcall goal-1 stream))))
 
+(defun reazon--ifte (test consq alt)
+  "Run CONSQ if TEST succeeds, else ALT."
+  (declare (indent 1))
+  (lambda (s)
+    (reazon--ifte-help (funcall test s) consq alt)))
+
+(defun reazon--ifte-help (stream consq alt)
+  "Run ALT with STREAM if it's nil, else CONSQ."
+  (cond
+   ((null stream) (funcall alt stream))
+   ((functionp stream)
+    (lambda () (reazon--ifte-help (funcall stream) consq alt)))
+   (t (reazon--append-map consq stream))))
+
+(defun reazon--once (goal)
+  "Run GOAL for just one value (if there is one)."
+  (lambda (s)
+    (reazon--once-help (funcall goal s))))
+
+(defun reazon--once-help (stream)
+  "Pull at most one value out of STREAM."
+  (cond
+   ((null stream) '())
+   ((functionp stream)
+    (lambda () (reazon--once-help (funcall stream))))
+   (t `(,(car stream)))))
+
 (defun reazon--run-goal (goal)
   "Pull GOAL with the empty stream."
   (reazon--pull (funcall goal nil)))
@@ -371,6 +398,33 @@ This will raise an error if the query has infinitely many solutions."
 (defmacro reazon-conde (&rest goal-lists)
   "Chain together each GOAL-LISTS as a disjunction of conjunctions."
   `(reazon-disj ,@(mapcar (lambda (arm) `(reazon-conj ,@arm)) goal-lists)))
+
+(defmacro reazon-conda (&rest goal-lists)
+  "Run only the first clause in GOAL-LISTS whose head succeeds.
+Also known as committed choice. This operator is impure."
+  (pcase (length goal-lists)
+    (0 '#'reazon-!U)
+    (1 `(reazon-conj ,@(car goal-lists)))
+    (_ (let* ((first-goal-list (car goal-lists))
+              (rest-goal-lists (cdr goal-lists))
+              (first-goal (car first-goal-list))
+              (rest-goals (cdr first-goal-list)))
+         `(reazon--ifte ,first-goal
+            (reazon-conj ,@rest-goals)
+            (reazon-conda ,@rest-goal-lists))))))
+
+(defmacro reazon-condu (&rest goal-lists)
+  "Run for just one value the first clause in GOAL-LISTS whose head succeeds.
+Also known as committed choice. This operator is impure."
+  (if (null goal-lists)
+      '#'reazon-!U
+    (let* ((first-goal-list (car goal-lists))
+           (rest-goal-lists (cdr goal-lists))
+           (first-goal (car first-goal-list))
+           (rest-goals (cdr first-goal-list)))
+      `(reazon-conda
+        ((reazon--once ,first-goal) ,@rest-goals)
+        ,@rest-goal-lists))))
 
 (defmacro reazon-defrel (name varlist &rest goals)
   "Define relation NAME with args VARLIST and body GOALS."

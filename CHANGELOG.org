@@ -1,4 +1,7 @@
 * 0.3 (unreleased)
+** Added
+- The impure operators conda and condu
+
 ** Fixed
 - `precedeso` was really doing `immediately-precedeso`. The latter was added as a separate function, and the former was fixed to be appropriately general.
 

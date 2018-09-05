@@ -151,6 +151,34 @@
       (reazon--should-equal l
         (reazon--take nil s)))))
 
+(ert-deftest reazon-test-unit-impure ()
+  (reazon--with-variables (x y)
+    (reazon--should-equal `(((,y . 6)))
+      (funcall (reazon--ifte #'reazon-!U
+                 (reazon-== 5 y)
+                 (reazon-== 6 y))
+               '()))
+    (reazon--should-equal `(((,y . 5) (,x . 6)))
+      (funcall (reazon--ifte (reazon-== 6 x)
+                 (reazon-== 5 y)
+                 (reazon-== 6 y))
+               '()))
+    (reazon--should-equal `(((,y . 5) (,x . 6)) ((,y . 5) (,x . 5)))
+      (funcall (reazon--ifte (reazon--disj-2
+                              (reazon-== x 6)
+                              (reazon-== x 5))
+                 (reazon-== 5 y)
+                 (reazon-== 6 y))
+               '()))
+    (reazon--should-equal `(((,y . 5) (,x . 6)))
+      (funcall (reazon--ifte (reazon--once
+                              (reazon--disj-2
+                               (reazon-== x 6)
+                               (reazon-== x 5)))
+                 (reazon-== 5 y)
+                 (reazon-== 6 y))
+               '()))))
+
 (defun reazon--test-unproductive ()
   "Produce nothing...forever."
   (lambda (s)
