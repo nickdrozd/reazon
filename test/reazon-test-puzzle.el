@@ -219,6 +219,52 @@
            (reazon-== `(,sv ,bv) '(n n))
            (reazon-== `(,sv ,bv) '(y n)))))))))
 
+(ert-deftest reazon-test-puzzle-exam ()
+  ;; Five schoolgirls sat for an examination. Their parents -- so they
+  ;; thought -- showed an undue degree of interest in the result. They
+  ;; therefore agreed that, in writing home about the examination,
+  ;; each girl should make one true statement and one untrue one. The
+  ;; following are the relevant passages from their letters:
+
+  ;; > Betty: "Kitty was second in the examination. I was only third."
+  ;; > Ethel: "You'll be glad to hear that I was on top. Joan was second."
+  ;; > Joan: "I was third, and poor old Ethel was bottom."
+  ;; > Kitty: "I came out second. Mary was only fourth."
+  ;; > Mary: "I was fourth. Top place was taken by Betty."
+
+  ;; What in fact was the order in which the five girls were placed?
+  (reazon--should-equal '((kitty joan betty mary ethel))
+    (reazon-run* q
+      (reazon-fresh (a b c d e)
+        ;; Betty: "Kitty was second in the examination. I was only third."
+        (reazon-disj
+         (reazon-== q `(,a kitty ,c ,d ,e))
+         (reazon-== q `(,a ,b betty ,d ,e)))
+        ;; Ethel: "You'll be glad to hear that I was on top. Joan was second."
+        (reazon-disj
+         (reazon-== q `(ethel ,b ,c ,d ,e))
+         (reazon-== q `(,a joan ,c ,d ,e)))
+        ;; Joan: "I was third, and poor old Ethel was bottom."
+        (reazon-disj
+         (reazon-== q `(,a ,b joan ,d ,e))
+         (reazon-== q `(,a ,b ,c ,d ethel)))
+        ;; Kitty: "I came out second. Mary was only fourth."
+        (reazon-disj
+         ;; Explicity enumerate possibilities to simulate negation.
+         (reazon-disj
+          (reazon-== q `(mary kitty ,c ,d ,e))
+          (reazon-== q `(,a kitty mary ,d ,e))
+          (reazon-== q `(,a kitty ,c ,d mary)))
+         (reazon-disj
+          (reazon-== q `(kitty ,b ,c mary ,e))
+          (reazon-== q `(,a ,b kitty mary ,e))
+          (reazon-== q `(,a ,b ,c mary kitty))))
+        ;; Mary: "I was fourth. Top place was taken by Betty."
+        (reazon-disj
+         (reazon-== q `(,a ,b ,c mary ,e))
+         (reazon-== q `(betty ,b ,c ,d ,e))))
+      (reazon-subseto '(betty ethel joan kitty mary) q))))
+
 
 (provide 'reazon-test-puzzle)
 ;;; reazon-test-puzzle.el ends here
