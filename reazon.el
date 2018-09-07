@@ -395,36 +395,36 @@ This will raise an error if the query has infinitely many solutions."
   `(reazon-run nil ,query-var
      ,@goals))
 
-(defmacro reazon-conde (&rest goal-lists)
-  "Chain together each GOAL-LISTS as a disjunction of conjunctions."
-  `(reazon-disj ,@(mapcar (lambda (arm) `(reazon-conj ,@arm)) goal-lists)))
+(defmacro reazon-conde (&rest clauses)
+  "Chain together CLAUSES as a disjunction of conjunctions."
+  `(reazon-disj ,@(mapcar (lambda (arm) `(reazon-conj ,@arm)) clauses)))
 
-(defmacro reazon-conda (&rest goal-lists)
-  "Run only the first clause in GOAL-LISTS whose head succeeds.
+(defmacro reazon-conda (&rest clauses)
+  "Run only the first clause in CLAUSES whose head succeeds.
 Also known as committed choice. This operator is impure."
-  (pcase (length goal-lists)
+  (pcase (length clauses)
     (0 '#'reazon-!U)
-    (1 `(reazon-conj ,@(car goal-lists)))
-    (_ (let* ((first-goal-list (car goal-lists))
-              (rest-goal-lists (cdr goal-lists))
-              (first-goal (car first-goal-list))
-              (rest-goals (cdr first-goal-list)))
-         `(reazon--ifte ,first-goal
-            (reazon-conj ,@rest-goals)
-            (reazon-conda ,@rest-goal-lists))))))
+    (1 `(reazon-conj ,@(car clauses)))
+    (_ (let* ((first-clause (car clauses))
+              (rest-clauses (cdr clauses))
+              (head (car first-clause))
+              (body (cdr first-clause)))
+         `(reazon--ifte ,head
+            (reazon-conj ,@body)
+            (reazon-conda ,@rest-clauses))))))
 
-(defmacro reazon-condu (&rest goal-lists)
-  "Run for just one value the first clause in GOAL-LISTS whose head succeeds.
+(defmacro reazon-condu (&rest clauses)
+  "Run for just one value the first clause in CLAUSES whose head succeeds.
 Also known as committed choice. This operator is impure."
-  (if (null goal-lists)
+  (if (null clauses)
       '#'reazon-!U
-    (let* ((first-goal-list (car goal-lists))
-           (rest-goal-lists (cdr goal-lists))
-           (first-goal (car first-goal-list))
-           (rest-goals (cdr first-goal-list)))
+    (let* ((first-clause (car clauses))
+           (rest-clauses (cdr clauses))
+           (head (car first-clause))
+           (body (cdr first-clause)))
       `(reazon-conda
-        ((reazon--once ,first-goal) ,@rest-goals)
-        ,@rest-goal-lists))))
+        ((reazon--once ,head) ,@body)
+        ,@rest-clauses))))
 
 (defmacro reazon-defrel (name varlist &rest goals)
   "Define relation NAME with args VARLIST and body GOALS."
