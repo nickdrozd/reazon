@@ -314,17 +314,19 @@ function: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
 
 (defmacro reazon-disj (&rest goals)
   "Chain together GOALS with `reazon--disj-2' if there are any, else fail."
-  (pcase (length goals)
-    (0 '#'reazon-!U)
-    (1 (car goals))
-    (_ `(reazon--disj-2 ,(car goals) (reazon-disj ,@(cdr goals))))))
+  (pcase goals
+    ('() '#'reazon-!U)
+    (`(,goal) goal)
+    (`(,goal . ,rest)
+     `(reazon--disj-2 ,goal (reazon-disj ,@rest)))))
 
 (defmacro reazon-conj (&rest goals)
   "Chain together GOALS with `reazon--conj-2' if there are any, else succeed."
-  (pcase (length goals)
-    (0 '#'reazon-!S)
-    (1 (car goals))
-    (_ `(reazon--conj-2 ,(car goals) (reazon-conj ,@(cdr goals))))))
+  (pcase goals
+    ('() '#'reazon-!S)
+    (`(,goal) goal)
+    (`(,goal . ,rest)
+     `(reazon--conj-2 ,goal (reazon-conj ,@rest)))))
 
 (defmacro reazon-fresh (vars &rest goals)
   "Bind each of VARS as a fresh variable and run the conjunction of GOALS."
@@ -402,29 +404,23 @@ This will raise an error if the query has infinitely many solutions."
 (defmacro reazon-conda (&rest clauses)
   "Run only the first clause in CLAUSES whose head succeeds.
 Also known as committed choice. This operator is impure."
-  (pcase (length clauses)
-    (0 '#'reazon-!U)
-    (1 `(reazon-conj ,@(car clauses)))
-    (_ (let* ((first-clause (car clauses))
-              (rest-clauses (cdr clauses))
-              (head (car first-clause))
-              (body (cdr first-clause)))
-         `(reazon--ifte ,head
-            (reazon-conj ,@body)
-            (reazon-conda ,@rest-clauses))))))
+  (pcase clauses
+    ('() '#'reazon-!U)
+    (`(,clause) `(reazon-conj ,@clause))
+    (`((,head . ,body) . ,rest)
+     `(reazon--ifte ,head
+        (reazon-conj ,@body)
+        (reazon-conda ,@rest)))))
 
 (defmacro reazon-condu (&rest clauses)
   "Run for just one value the first clause in CLAUSES whose head succeeds.
 Also known as committed choice. This operator is impure."
-  (if (null clauses)
-      '#'reazon-!U
-    (let* ((first-clause (car clauses))
-           (rest-clauses (cdr clauses))
-           (head (car first-clause))
-           (body (cdr first-clause)))
-      `(reazon-conda
-        ((reazon--once ,head) ,@body)
-        ,@rest-clauses))))
+  (pcase clauses
+    ('() '#'reazon-!U)
+    (`((,head . ,body) . ,rest)
+     `(reazon-conda
+       ((reazon--once ,head) ,@body)
+       ,@rest))))
 
 (defmacro reazon-defrel (name varlist &rest goals)
   "Define relation NAME with args VARLIST and body GOALS."
