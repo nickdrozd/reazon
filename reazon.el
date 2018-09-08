@@ -465,6 +465,15 @@ Also known as committed choice. This operator is impure."
       (reazon-conso a res out)
       (reazon-appendo d p res)))))
 
+(reazon-defrel reazon-assqo (x s out)
+  (reazon-conde
+   ((reazon-nullo s) (reazon-nullo out))
+   ((reazon-fresh (key val rest)
+      (reazon-== s `((,key . ,val) ,@rest))
+      (reazon-conde
+       ((reazon-== x key) (reazon-== out `(,key . ,val)))
+       ((reazon-assqo x rest out)))))))
+
 (reazon-defrel reazon-membero (x s)
   (reazon-conde
    ((reazon-caro s x))

@@ -195,6 +195,17 @@
     (reazon-run* (x y)
       (reazon-appendo x y '(cake with ice d t)))))
 
+(ert-deftest reazon-test-relations-assqo ()
+  ;; Verify that assqo matches assq
+  (let ((results
+         (reazon-run 100 (x s out)
+           (reazon-assqo x s out))))
+    (dolist (res results)
+      (pcase res
+        (`(,x ,s ,out)
+         (reazon--should-equal out
+           (assq x s)))))))
+
 (ert-deftest reazon-test-relation-listo ()
   (reazon--should-equal '(() (_0) (_0 _1) (_0 _1 _2) (_0 _1 _2 _3))
     (reazon-run 5 q
