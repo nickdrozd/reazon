@@ -265,6 +265,50 @@
          (reazon-== q `(betty ,b ,c ,d ,e))))
       (reazon-subseto '(betty ethel joan kitty mary) q))))
 
+(ert-deftest reazon-test-puzzle-ages ()
+  ;; Tom and Betty have the same birthday and are both in their
+  ;; twenties. He is four times as old as she was when he was three
+  ;; times as old as she was when he was twice as old as she was. How
+  ;; old are they?
+  (reazon--should-equal '((24 21))
+    (reazon-run* (tom betty)
+      (reazon-subseto `(,tom ,betty) (number-sequence 20 29))
+      (reazon-project (tom betty)
+        (reazon-fresh (diff)
+          (reazon-== diff (- tom betty))
+          (reazon-project (diff)
+            (reazon-fresh (b1)
+              (reazon-== t (= 0 (mod tom 4)))
+              (reazon-== b1 (/ tom 4))
+              (reazon-project (b1)
+                (reazon-fresh (t1)
+                  (reazon-== t1 (+ b1 diff))
+                  (reazon-project (t1)
+                    (reazon-fresh (b2)
+                      (reazon-== t (= 0 (mod t1 3)))
+                      (reazon-== b2 (/ t1 3))
+                      (reazon-project (b2)
+                        (reazon-fresh (t2)
+                          (reazon-== t2 (+ b2 diff))
+                          (reazon-== t2 (* b2 2)))))))))))))
+    ;; Same as the last one, but with the fresh variables hoisted.
+    (reazon-run* (tom betty)
+      (reazon-subseto `(,tom ,betty) (number-sequence 20 29))
+      (reazon-fresh (diff b1 t1 b2 t2)
+        (reazon-project (tom betty)
+          (reazon-== diff (- tom betty))
+          (reazon-project (diff)
+            (reazon-== t (= 0 (mod tom 4)))
+            (reazon-== b1 (/ tom 4))
+            (reazon-project (b1)
+              (reazon-== t1 (+ b1 diff))
+              (reazon-project (t1)
+                (reazon-== t (= 0 (mod t1 3)))
+                (reazon-== b2 (/ t1 3))
+                (reazon-project (b2)
+                  (reazon-== t2 (+ b2 diff))
+                  (reazon-== t2 (* b2 2)))))))))))
+
 
 (provide 'reazon-test-puzzle)
 ;;; reazon-test-puzzle.el ends here
