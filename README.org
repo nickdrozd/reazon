@@ -427,6 +427,38 @@ Defining a predicate in this way makes it inconvenient to update it with new rul
 
 See the test file [[https://github.com/nickdrozd/reazon/blob/master/test/reazon-test-prolog.el][test/reazon-test-prolog.el]] for an extended example involving a personnel records database.
 
+** I tried adding some numbers in a query and I got a type error.
+
+Working with numbers in Reazon is not straightforward. Here's something you might think of doing:
+
+#+BEGIN_SRC emacs-lisp
+(reazon-run* (x y)
+  (reazon-== x 5)
+  (reazon-== y (+ x 1)))
+#+END_SRC
+
+A type error will be raised when =(+ x 1)= is evaluated. This is because =x= is not 5, but rather a logic variable bound to 5. =+= can't operate on logic variables, so a type error is raised.
+
+One way around this is to encode numbers as lists, but that requires a lot of machinery and is overkill for a lot of simple math problems. Another way is to use =project= to get at the value bound to a variable. This
+
+#+BEGIN_SRC emacs-lisp
+(reazon-run* (x y)
+  (reazon-== x 5)
+  (reazon-project (x)
+    (reazon-== y (* x x))))
+#+END_SRC
+
+will yield ='((5 25))=. But =project= is an *impure* operator, in that the value of a =project= expression depends on the ordering of clauses. Switching the clauses in the previous example will cause a type error to be raised.
+
+#+BEGIN_SRC emacs-lisp
+(reazon-run* (x y)
+  (reazon-project (x)
+    (reazon-== y (* x x)))
+  (reazon-== x 5))
+#+END_SRC
+
+Impure operators are generally frowned upon in logic programming for basically the same reasons that mutable state is frowned upon in functional programming, and so =project= should generally be avoided unless absolutely necessary.
+
 * Footnotes
 
 [fn:1] This example is used by every introduction to logic programming I've ever seen, including those for Prolog.
