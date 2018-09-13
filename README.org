@@ -367,13 +367,32 @@ Transforming an expression is merely a matter of running the relation rule again
 
 #+BEGIN_SRC emacs-lisp :exports both :results code
 (let ((exp '(if condition (progn body-1 body-2))))
-  (reazon-run* q (if-without-else-becomes-when exp q)))
+  (reazon-run* q
+    (if-without-else-becomes-when exp q)))
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_SRC emacs-lisp
 ((when condition body-1 body-2))
 #+END_SRC
+
+** That looks like simple pattern matching. Wouldn't it be easier just to use pcase?
+
+=pcase= only goes one way. What if you wanted to go the other direction?
+
+#+BEGIN_SRC emacs-lisp :exports both :results code
+(let ((exp '(when condition body-1 body-2)))
+  (reazon-run* q
+    (if-without-else-becomes-when q exp)))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC emacs-lisp
+((if condition
+     (progn body-1 body-2)))
+#+END_SRC
+
+That's right: with Reazon, you can *run your linter backwards* to *systematically generate worse code*! If that isn't a killer app, I don't know what is.
 
 ** Can Reazon be used as part of a scheduler, say, in conjuction with Org Mode?
 
