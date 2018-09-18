@@ -299,11 +299,12 @@ This is the reification entrypoint."
            (reified-sub (reazon--reify-sub walked-var '())))
       (reazon--walk* walked-var reified-sub))))
 
-(defun reazon--call-with-fresh (name function)
-  "Call FUNCTION with a variable created from NAME.
-function: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
+(defun reazon--call-with-fresh (names function)
+  "Call FUNCTION with a variable created from NAMES.
+names: list of symbols
+function: variables -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
   (declare (indent 1))
-  (funcall function (reazon--make-variable name)))
+  (apply function (mapcar #'reazon--make-variable names)))
 
 ;; -- Macros --
 
@@ -333,11 +334,9 @@ function: variable -> goal, e.g. (lambda (fruit) (reazon-== 'plum fruit))"
   (declare (indent 1))
   (if (null vars)
       `(reazon-conj ,@goals)
-    (let ((var (car vars)))
-      `(reazon--call-with-fresh (gensym)
-         (lambda (,var)
-           (reazon-fresh ,(cdr vars)
-             ,@goals))))))
+    `(reazon--call-with-fresh (mapcar #'gensym ',vars)
+       (lambda (,@vars)
+         (reazon-conj ,@goals)))))
 
 (defmacro reazon-project (vars &rest goals)
   "Run GOALS with the values associated with VARS lexically bound.

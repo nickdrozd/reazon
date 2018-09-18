@@ -5,6 +5,7 @@
 
 ** Fixed
 - `precedeso` was really doing `immediately-precedeso`. The latter was added as a separate function, and the former was fixed to be appropriately general.
+- The byte compiler would choke on expressions with too many fresh variables, as for instance in the 9x9 Sudoku solver.
 
 ** Improved
 - Made `membero` more efficient.
