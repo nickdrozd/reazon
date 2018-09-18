@@ -8,7 +8,7 @@
 - The byte compiler would choke on expressions with too many fresh variables, as for instance in the 9x9 Sudoku solver.
 
 ** Improved
-- Made `membero` more efficient.
+- Made `membero` and `subseto` more efficient.
 
 * 0.2
 ** Added

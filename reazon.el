@@ -500,12 +500,12 @@ Also known as committed choice. This operator is impure."
    (reazon-immediately-precedeso y x s)))
 
 (reazon-defrel reazon-subseto (subset set)
-  (reazon-conde
-   ((reazon-nullo subset))
-   ((reazon-fresh (a d)
-      (reazon-conso a d subset)
-      (reazon-membero a set)
-      (reazon-subseto d set)))))
+  (reazon-disj
+   (reazon-== subset '())
+   (reazon-fresh (a d)
+     (reazon-== subset `(,a . ,d))
+     (reazon-membero a set)
+     (reazon-subseto d set))))
 
 (reazon-defrel reazon-set-equalo (s1 s2)
   (reazon-subseto s1 s2)
