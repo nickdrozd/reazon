@@ -6,6 +6,9 @@
 ** Fixed
 - `precedeso` was really doing `immediately-precedeso`. The latter was added as a separate function, and the former was fixed to be appropriately general.
 
+** Improved
+- Made `membero` more efficient.
+
 * 0.2
 ** Added
 - Relations: listo, membero, subseto, set-equalo, adjeacento, and precedeso

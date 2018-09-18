@@ -475,11 +475,11 @@ Also known as committed choice. This operator is impure."
        ((reazon-assqo x rest out)))))))
 
 (reazon-defrel reazon-membero (x s)
-  (reazon-conde
-   ((reazon-caro s x))
-   ((reazon-fresh (d)
-      (reazon-cdro s d)
-      (reazon-membero x d)))))
+  (reazon-fresh (a d)
+    (reazon-conso a d s)
+    (reazon-disj
+     (reazon-== a x)
+     (reazon-membero x d))))
 
 (reazon-defrel reazon-precedeso (x y s)
   (reazon-fresh (a d)
