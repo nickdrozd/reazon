@@ -476,7 +476,7 @@ Also known as committed choice. This operator is impure."
 
 (reazon-defrel reazon-membero (x s)
   (reazon-fresh (a d)
-    (reazon-conso a d s)
+    (reazon-== s `(,a . ,d))
     (reazon-disj
      (reazon-== a x)
      (reazon-membero x d))))
