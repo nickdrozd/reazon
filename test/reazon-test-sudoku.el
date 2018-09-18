@@ -36,13 +36,10 @@
     (reazon-sudoku-solve-4x4 (a3 2) (a4 2))
     (reazon-sudoku-solve-4x4 (a1 3) (b1 3))))
 
-;; Apparently the byte compiler chokes on any invocation of
-;; `reazon-sudoku-solve-9x9', so we can't even put in a skipped test.
-
-;; (ert-deftest reazon-test-sudoku-solve-9x9 ()
-;;   (reazon--should-equal '()
-;;     (reazon-sudoku-solve-9x9
-;;      (a1 1) (a2 1) (a3 1) (a4 1) (a5 1))))
+(ert-deftest reazon-test-sudoku-solve-9x9 ()
+  (reazon--should-equal '()
+    (reazon-sudoku-solve-9x9
+     (a1 1) (a2 1) (a3 1) (a4 1) (a5 1))))
 
 
 (provide 'reazon-test-sudoku)
