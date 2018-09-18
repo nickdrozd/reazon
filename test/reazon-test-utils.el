@@ -40,14 +40,11 @@
     `(let (,@reazon--vars)
        ,@body)))
 
-(defmacro reazon--should-equal(expected &rest forms)
+(defun  reazon--should-equal(expected &rest forms)
   "Assert that each form in FORMS equals EXPECTED."
   (declare (indent 1))
-  (let ((assertions
-         (mapcar
-          (lambda (form) `(should (equal ,expected ,form)))
-          forms)))
-    `(progn ,@assertions)))
+  (dolist (form forms)
+    (should (equal form expected))))
 
 
 (provide 'reazon-test-utils)
