@@ -34,11 +34,10 @@
 Keep an eye out for recursive functions!"
   (interactive)
   (profiler-start 'mem)
-  (dotimes (_ 1)
+  (dotimes (_ 2)
     ;; dummy value to silence compiler warnings
     (let ((dummy
-           (reazon-run 8 q
-             (reazon-set-equalo q '(1 2 3 4)))))
+           (reazon-sudoku-solve-4x4)))
       (null dummy)))
   (profiler-report)
   (profiler-stop))
