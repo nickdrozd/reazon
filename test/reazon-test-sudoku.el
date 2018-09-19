@@ -34,7 +34,11 @@
   (reazon--should-equal '()
     (reazon-sudoku-solve-4x4 (a1 1) (b2 1))
     (reazon-sudoku-solve-4x4 (a3 2) (a4 2))
-    (reazon-sudoku-solve-4x4 (a1 3) (b1 3))))
+    (reazon-sudoku-solve-4x4 (a1 3) (b1 3))
+    (reazon-sudoku-solve-4x4 (d3 1) (d4 1)))
+  (reazon--should-equal 288
+    (length
+     (reazon-sudoku-solve-4x4))))
 
 (ert-deftest reazon-test-sudoku-solve-9x9 ()
   (reazon--should-equal '()
@@ -61,17 +65,7 @@
      (g1 5) (g2 1) (g3 9) (g4 3) (g5 2) (g6 6) (g7 8) (g8 7) (g9 4)
      (h1 2) (h2 4) (h3 8) (h4 9) (h5 5) (h6 7) (h7 1) (h8 3) (h9 6)
      (i1 7) (i2 6) (i3 3) (i4 4) (i5 1) (i6 8) (i7 2) (i8 5) (i9 9))
-    ;; Same as the previous one, but solving for the last row
-    (reazon-sudoku-solve-9x9
-     (a1 4) (a2 3) (a3 5) (a4 2) (a5 6) (a6 9) (a7 7) (a8 8) (a9 1)
-     (b1 6) (b2 8) (b3 2) (b4 5) (b5 7) (b6 1) (b7 4) (b8 9) (b9 3)
-     (c1 1) (c2 9) (c3 7) (c4 8) (c5 3) (c6 4) (c7 5) (c8 6) (c9 2)
-     (d1 8) (d2 2) (d3 6) (d4 1) (d5 9) (d6 5) (d7 3) (d8 4) (d9 7)
-     (e1 3) (e2 7) (e3 4) (e4 6) (e5 8) (e6 2) (e7 9) (e8 1) (e9 5)
-     (f1 9) (f2 5) (f3 1) (f4 7) (f5 4) (f6 3) (f7 6) (f8 2) (f9 8)
-     (g1 5) (g2 1) (g3 9) (g4 3) (g5 2) (g6 6) (g7 8) (g8 7) (g9 4)
-     (h1 2) (h2 4) (h3 8) (h4 9) (h5 5) (h6 7) (h7 1) (h8 3) (h9 6))
-    ;; The same board again, but solving for the last column
+    ;; Same as the previous one, but missing the last row and column
     (reazon-sudoku-solve-9x9
      (a1 4) (a2 3) (a3 5) (a4 2) (a5 6) (a6 9) (a7 7) (a8 8)
      (b1 6) (b2 8) (b3 2) (b4 5) (b5 7) (b6 1) (b7 4) (b8 9)
@@ -80,33 +74,21 @@
      (e1 3) (e2 7) (e3 4) (e4 6) (e5 8) (e6 2) (e7 9) (e8 1)
      (f1 9) (f2 5) (f3 1) (f4 7) (f5 4) (f6 3) (f7 6) (f8 2)
      (g1 5) (g2 1) (g3 9) (g4 3) (g5 2) (g6 6) (g7 8) (g8 7)
-     (h1 2) (h2 4) (h3 8) (h4 9) (h5 5) (h6 7) (h7 1) (h8 3)
-     (i1 7) (i2 6) (i3 3) (i4 4) (i5 1) (i6 8) (i7 2) (i8 5))
-    ;; Missing TL-BR diagonal
+     (h1 2) (h2 4) (h3 8) (h4 9) (h5 5) (h6 7) (h7 1) (h8 3))
+    ;; Missing all diagonals
     (reazon-sudoku-solve-9x9
-            (a2 3) (a3 5) (a4 2) (a5 6) (a6 9) (a7 7) (a8 8) (a9 1)
-     (b1 6)        (b3 2) (b4 5) (b5 7) (b6 1) (b7 4) (b8 9) (b9 3)
-     (c1 1) (c2 9)        (c4 8) (c5 3) (c6 4) (c7 5) (c8 6) (c9 2)
-     (d1 8) (d2 2) (d3 6)        (d5 9) (d6 5) (d7 3) (d8 4) (d9 7)
+            (a2 3) (a3 5) (a4 2) (a5 6) (a6 9) (a7 7) (a8 8)
+     (b1 6)        (b3 2) (b4 5) (b5 7) (b6 1) (b7 4)        (b9 3)
+     (c1 1) (c2 9)        (c4 8) (c5 3) (c6 4)        (c8 6) (c9 2)
+     (d1 8) (d2 2) (d3 6)        (d5 9)        (d7 3) (d8 4) (d9 7)
      (e1 3) (e2 7) (e3 4) (e4 6)        (e6 2) (e7 9) (e8 1) (e9 5)
-     (f1 9) (f2 5) (f3 1) (f4 7) (f5 4)        (f7 6) (f8 2) (f9 8)
-     (g1 5) (g2 1) (g3 9) (g4 3) (g5 2) (g6 6)        (g8 7) (g9 4)
-     (h1 2) (h2 4) (h3 8) (h4 9) (h5 5) (h6 7) (h7 1)        (h9 6)
-     (i1 7) (i2 6) (i3 3) (i4 4) (i5 1) (i6 8) (i7 2) (i8 5))
-    ;; Missing BL-TR diagonal
+     (f1 9) (f2 5) (f3 1)        (f5 4)        (f7 6) (f8 2) (f9 8)
+     (g1 5) (g2 1)        (g4 3) (g5 2) (g6 6)        (g8 7) (g9 4)
+     (h1 2)        (h3 8) (h4 9) (h5 5) (h6 7) (h7 1)        (h9 6)
+            (i2 6) (i3 3) (i4 4) (i5 1) (i6 8) (i7 2) (i8 5))
+    ;; Missing the middle of every box and the corners (and others)
     (reazon-sudoku-solve-9x9
-     (a1 4) (a2 3) (a3 5) (a4 2) (a5 6) (a6 9) (a7 7) (a8 8)
-     (b1 6) (b2 8) (b3 2) (b4 5) (b5 7) (b6 1) (b7 4)        (b9 3)
-     (c1 1) (c2 9) (c3 7) (c4 8) (c5 3) (c6 4)        (c8 6) (c9 2)
-     (d1 8) (d2 2) (d3 6) (d4 1) (d5 9)        (d7 3) (d8 4) (d9 7)
-     (e1 3) (e2 7) (e3 4) (e4 6)        (e6 2) (e7 9) (e8 1) (e9 5)
-     (f1 9) (f2 5) (f3 1)        (f5 4) (f6 3) (f7 6) (f8 2) (f9 8)
-     (g1 5) (g2 1)        (g4 3) (g5 2) (g6 6) (g7 8) (g8 7) (g9 4)
-     (h1 2)        (h3 8) (h4 9) (h5 5) (h6 7) (h7 1) (h8 3) (h9 6)
-            (i2 6) (i3 3) (i4 4) (i5 1) (i6 8) (i7 2) (i8 5) (i9 9))
-    ;; Missing the middle of every box
-    (reazon-sudoku-solve-9x9
-     (a1 4) (a2 3) (a3 5) (a4 2) (a5 6) (a6 9) (a7 7) (a8 8) (a9 1)
+            (a2 3) (a3 5) (a4 2)        (a6 9) (a7 7) (a8 8)
      (b1 6)        (b3 2) (b4 5)        (b6 1) (b7 4)        (b9 3)
      (c1 1) (c2 9) (c3 7) (c4 8) (c5 3) (c6 4) (c7 5) (c8 6) (c9 2)
      (d1 8) (d2 2) (d3 6) (d4 1) (d5 9) (d6 5) (d7 3) (d8 4) (d9 7)
@@ -114,7 +96,7 @@
      (f1 9) (f2 5) (f3 1) (f4 7) (f5 4) (f6 3) (f7 6) (f8 2) (f9 8)
      (g1 5) (g2 1) (g3 9) (g4 3) (g5 2) (g6 6) (g7 8) (g8 7) (g9 4)
      (h1 2)        (h3 8) (h4 9)        (h6 7) (h7 1)        (h9 6)
-     (i1 7) (i2 6) (i3 3) (i4 4) (i5 1) (i6 8) (i7 2) (i8 5) (i9 9))))
+            (i2 6) (i3 3) (i4 4)        (i6 8) (i7 2) (i8 5))))
 
 
 (provide 'reazon-test-sudoku)
