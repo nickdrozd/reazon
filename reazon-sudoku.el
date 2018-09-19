@@ -28,11 +28,13 @@
 
 (require 'reazon)
 
-(reazon-defrel reazon--in-range-4 (s)
-  (reazon-membero 1 s)
-  (reazon-membero 2 s)
-  (reazon-membero 3 s)
-  (reazon-membero 4 s))
+(defmacro reazon--one-of-the-following (s perms)
+  "Assert that S is one of PERMS."
+  `(reazon-disj
+    ,@(mapcar
+       (lambda (perm)
+         `(reazon-== ,s ',perm))
+       perms)))
 
 (defmacro reazon-sudoku-solve-4x4 (&rest coordinate-value-pairs)
   "Solve 4x4 sudoku puzzles, given constraints COORDINATE-VALUE-PAIRS.
@@ -53,24 +55,28 @@ If there are multiple solutions satisfying the given constraints, all of them
 will be generated. In particular, if no constraints are specified, all 4x4
 solved instances will be generated."
 
-  `(reazon-run* (a1 a2 a3 a4 b1 b2 b3 b4 c1 c2 c3 c4 d1 d2 d3 d4)
+  (let ((perms (reazon-run* q
+                 (reazon-fresh (a b c d)
+                   (reazon-== q `(,a ,b ,c ,d)))
+                 (reazon-set-equalo q '(1 2 3 4)))))
+   `(reazon-run* (a1 a2 a3 a4 b1 b2 b3 b4 c1 c2 c3 c4 d1 d2 d3 d4)
 
      ,@(mapcar
         (lambda (cvp) `(reazon-== ,@cvp))
         coordinate-value-pairs)
 
-     (reazon--in-range-4 `(,a1 ,a2 ,a3 ,a4))
-     (reazon--in-range-4 `(,a1 ,b1 ,c1 ,d1))
-     (reazon--in-range-4 `(,a1 ,a2 ,b1 ,b2))
-     (reazon--in-range-4 `(,b1 ,b2 ,b3 ,b4))
-     (reazon--in-range-4 `(,a2 ,b2 ,c2 ,d2))
-     (reazon--in-range-4 `(,a3 ,b3 ,c3 ,d3))
-     (reazon--in-range-4 `(,a3 ,a4 ,b3 ,b4))
-     (reazon--in-range-4 `(,a4 ,b4 ,c4 ,d4))
-     (reazon--in-range-4 `(,c1 ,c2 ,c3 ,c4))
-     (reazon--in-range-4 `(,c1 ,c2 ,d1 ,d2))
-     (reazon--in-range-4 `(,d1 ,d2 ,d3 ,d4))
-     (reazon--in-range-4 `(,c3 ,c4 ,d3 ,d4))))
+     (reazon--one-of-the-following `(,a1 ,a2 ,a3 ,a4) ,perms)
+     (reazon--one-of-the-following `(,a1 ,b1 ,c1 ,d1) ,perms)
+     (reazon--one-of-the-following `(,a1 ,a2 ,b1 ,b2) ,perms)
+     (reazon--one-of-the-following `(,b1 ,b2 ,b3 ,b4) ,perms)
+     (reazon--one-of-the-following `(,a2 ,b2 ,c2 ,d2) ,perms)
+     (reazon--one-of-the-following `(,a3 ,b3 ,c3 ,d3) ,perms)
+     (reazon--one-of-the-following `(,a3 ,a4 ,b3 ,b4) ,perms)
+     (reazon--one-of-the-following `(,a4 ,b4 ,c4 ,d4) ,perms)
+     (reazon--one-of-the-following `(,c1 ,c2 ,c3 ,c4) ,perms)
+     (reazon--one-of-the-following `(,c1 ,c2 ,d1 ,d2) ,perms)
+     (reazon--one-of-the-following `(,d1 ,d2 ,d3 ,d4) ,perms)
+     (reazon--one-of-the-following `(,c3 ,c4 ,d3 ,d4) ,perms))))
 
 
 (reazon-defrel reazon--in-range-9 (s)
