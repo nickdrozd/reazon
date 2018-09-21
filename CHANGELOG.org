@@ -1,4 +1,4 @@
-* 0.3 (unreleased)
+* 0.3
 ** Added
 - The impure operators conda and condu
 - Relations: assqo
@@ -9,6 +9,7 @@
 
 ** Improved
 - Made `membero` and `subseto` more efficient.
+- Significantly improved speed of Sudoku solvers.
 
 * 0.2
 ** Added
