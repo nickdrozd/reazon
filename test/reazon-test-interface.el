@@ -120,6 +120,10 @@
   (reazon-disj (reazon-== x 'tea) (reazon-== x 'cup)))
 
 (ert-deftest reazon-test-interface-defrel ()
+  (should-error
+   (with-temp-buffer
+     (reazon-defrel reazon--test-dynamic-scopeo (x)))
+   :type 'user-error)
   (reazon--should-equal '(tea cup)
     (reazon-run* x (reazon--test-teacupo x)))
   (reazon--should-equal '((nil t) (tea t) (cup t))

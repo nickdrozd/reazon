@@ -425,10 +425,12 @@ Also known as committed choice. This operator is impure."
   "Define relation NAME with args VARLIST and body GOALS."
   (declare (indent 2))
   (let ((stream (gensym)))
-    `(defun ,name ,varlist
-       (lambda (,stream)
-         (lambda ()
-           (funcall (reazon-conj ,@goals) ,stream))))))
+    `(if (not lexical-binding)
+         (user-error "Can't define new relations when lexical binding is disabled!")
+       (defun ,name ,varlist
+         (lambda (,stream)
+           (lambda ()
+             (funcall (reazon-conj ,@goals) ,stream)))))))
 
 (reazon-defrel reazon-caro (p a)
   (reazon-fresh (d)
