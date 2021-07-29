@@ -421,34 +421,49 @@ Also known as committed choice. This operator is impure."
        ((reazon--once ,head) ,@body)
        ,@rest))))
 
-(defmacro reazon-defrel (name varlist &rest goals)
-  "Define relation NAME with args VARLIST and body GOALS."
-  (declare (indent 2))
+(defmacro reazon-defrel (name varlist &optional docstring &rest goals)
+  "Define relation NAME with args VARLIST and body GOALS, and a DOCSTRING."
+  (declare (indent 2) (doc-string 3))
+
+  ;; keep this nasty docstring logic
+  ;; away from the relation definition
+  (if (stringp docstring)
+      (setq docstring `(,docstring))
+    (setq goals `(,docstring . ,goals)
+          docstring nil))
+
   (let ((stream (gensym)))
     `(defun ,name ,varlist
+       ,@docstring
        (lambda (,stream)
          (lambda ()
            (funcall (reazon-conj ,@goals) ,stream))))))
 
 (reazon-defrel reazon-caro (p a)
+  "A is the car of P."
   (reazon-fresh (d)
     (reazon-conso a d p)))
 
 (reazon-defrel reazon-cdro (p d)
+  "D is the cdr of P."
   (reazon-fresh (a)
     (reazon-conso a d p)))
 
 (reazon-defrel reazon-conso (a d p)
+  "P is a cons of A and D."
   (reazon-== p (cons a d)))
 
 (reazon-defrel reazon-nullo (x)
+  "X is null."
   (reazon-== x '()))
 
 (reazon-defrel reazon-pairo (p)
+  "P is a pair."
   (reazon-fresh (a d)
     (reazon-conso a d p)))
 
 (reazon-defrel reazon-listo (s)
+  "S is a proper list."
   (reazon-conde
    ((reazon-nullo s))
    ((reazon-pairo s)
@@ -457,6 +472,7 @@ Also known as committed choice. This operator is impure."
       (reazon-listo d)))))
 
 (reazon-defrel reazon-appendo (l p out)
+  "L appended to P produces OUT."
   (reazon-conde
    ((reazon-nullo l) (reazon-== p out))
    ((reazon-fresh (a d res)
@@ -465,6 +481,7 @@ Also known as committed choice. This operator is impure."
       (reazon-appendo d p res)))))
 
 (reazon-defrel reazon-assqo (x s out)
+  "Retrieving X from the alist S produces OUT."
   (reazon-conde
    ((reazon-nullo s) (reazon-nullo out))
    ((reazon-fresh (key val rest)
@@ -474,6 +491,7 @@ Also known as committed choice. This operator is impure."
        ((reazon-assqo x rest out)))))))
 
 (reazon-defrel reazon-membero (x s)
+  "X exists in the list S."
   (reazon-fresh (a d)
     (reazon-== s `(,a . ,d))
     (reazon-disj
@@ -481,6 +499,7 @@ Also known as committed choice. This operator is impure."
      (reazon-membero x d))))
 
 (reazon-defrel reazon-precedeso (x y s)
+  "X is the list of elements preceding Y in the list S."
   (reazon-fresh (a d)
     (reazon-conso a d s)
     (reazon-conde
@@ -488,6 +507,7 @@ Also known as committed choice. This operator is impure."
      ((reazon-precedeso x y d)))))
 
 (reazon-defrel reazon-immediately-precedeso (x y s)
+  "X is the element immediately preceding Y in the list S."
   (reazon-fresh (a d)
     (reazon-conso a d s)
     (reazon-conde
@@ -495,11 +515,13 @@ Also known as committed choice. This operator is impure."
      ((reazon-immediately-precedeso x y d)))))
 
 (reazon-defrel reazon-adjacento (x y s)
+  "X is an adjacent element to Y in the list S."
   (reazon-disj
    (reazon-immediately-precedeso x y s)
    (reazon-immediately-precedeso y x s)))
 
 (reazon-defrel reazon-subseto (subset set)
+  "SUBSET is a subset of SET."
   (reazon-disj
    (reazon-== subset '())
    (reazon-fresh (a d)
@@ -508,6 +530,7 @@ Also known as committed choice. This operator is impure."
      (reazon-subseto d set))))
 
 (reazon-defrel reazon-set-equalo (s1 s2)
+  "S1 contains the same set of elements as S2."
   (reazon-subseto s1 s2)
   (reazon-subseto s2 s1))
 

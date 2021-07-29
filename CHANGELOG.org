@@ -1,3 +1,7 @@
+* 0.4 (next)
+** Added
+- Docstring support for defrel (@ethan-leba)
+
 * 0.3
 ** Added
 - The impure operators conda and condu

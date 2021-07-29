@@ -27,6 +27,7 @@
 (require 'reazon-test-utils)
 
 (reazon-defrel reazon--test-likes (a b)
+  "A likes B."
   (reazon-conde
    ((reazon-== a 'kim) (reazon-== b 'robin))
    ((reazon-== a 'sandy) (reazon-== b 'lee))
@@ -75,6 +76,7 @@
 ;; Boston area".
 
 (reazon-defrel reazon--microshaft-address (name address)
+  "Addresses for Microshaft personnel."
   (reazon-membero
    `(,name ,address)
    '(((Bitdiddle Ben) (Slumerville (Ridge Road) 10))
@@ -88,6 +90,7 @@
      ((Aull DeWitt) (Slumerville (Onion Square) 5)))))
 
 (reazon-defrel reazon--microshaft-job (name job)
+  "Job titles for Microshaft personnel."
   (reazon-membero
    `(,name ,job)
    '(((Bitdiddle Ben) (computer wizard))
@@ -101,6 +104,11 @@
      ((Aull DeWitt) (administration secretary)))))
 
 (reazon-defrel reazon--microshaft-salary (name salary)
+  "Salary for Microshaft personnel.
+At least I think that's what it is. This data
+comes from a thumbdrive I found in the employee
+parking lot labeled \"SALARY INFO -- DO NOT
+SHARE\"."
   (reazon-membero
    `(,name ,salary)
    '(((Bitdiddle Ben) 60000)
@@ -114,6 +122,7 @@
      ((Aull DeWitt) 25000))))
 
 (reazon-defrel reazon--microshaft-supervisor (name supervisor)
+  "The Microshaft org chart."
   (reazon-membero
    `(,name ,supervisor)
    '(((Bitdiddle Ben) (Warbucks Oliver))
@@ -126,6 +135,7 @@
      ((Aull DeWitt) (Warbucks Oliver)))))
 
 (reazon-defrel reazon--microshaft-lives-near (a b)
+  "A lives near B"
   (reazon-fresh (town rest-a rest-b)
     (reazon--microshaft-address a `(,town . ,rest-a))
     (reazon--microshaft-address b `(,town . ,rest-b))
@@ -133,11 +143,13 @@
       (reazon-== nil (equal a b)))))
 
 (reazon-defrel reazon--microshaft-wheel (wheel)
+  "Big wheels keep on turning."
   (reazon-fresh (middle-manager underling)
     (reazon--microshaft-supervisor middle-manager wheel)
     (reazon--microshaft-supervisor underling middle-manager)))
 
 (reazon-defrel reazon--microshaft-meeting (division time)
+  "Gotta meet all day til the meetin's done."
   (reazon-membero
    `(,division ,time)
    '((accounting (Monday 9am))
@@ -147,6 +159,7 @@
      (whole-company (Wednesday 4pm)))))
 
 (reazon-defrel reazon--microshaft-meeting-time (name day-and-time)
+  "It's always meeting time somewhere."
   (reazon-fresh (division job)
     (reazon-disj
      (reazon-== division 'whole-company)

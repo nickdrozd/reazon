@@ -80,6 +80,7 @@ solved instances will be generated."
 
 
 (reazon-defrel reazon--in-range-9 (s)
+  "Assert that numbers 1-9 are in S."
   (reazon-membero 1 s)
   (reazon-membero 2 s)
   (reazon-membero 3 s)

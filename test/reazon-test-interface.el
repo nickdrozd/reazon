@@ -117,11 +117,18 @@
        (reazon-== x 5)))))
 
 (reazon-defrel reazon--test-teacupo (x)
+  "X is tea or cup."
   (reazon-disj (reazon-== x 'tea) (reazon-== x 'cup)))
+
+(reazon-defrel reazon--test-empty-relo (_x))
 
 (ert-deftest reazon-test-interface-defrel ()
   (reazon--should-equal '(tea cup)
     (reazon-run* x (reazon--test-teacupo x)))
+  (reazon--should-equal "X is tea or cup."
+    (documentation #'reazon--test-teacupo))
+  ;; (reazon--should-equal '(_0)
+  ;;   (reazon-run* x (reazon--test-empty-relo x)))
   (reazon--should-equal '((nil t) (tea t) (cup t))
     (reazon-run* (x y)
       (reazon-conde
@@ -201,6 +208,7 @@
        ((reazon-== 'oil x))))))
 
 (reazon-defrel reazon--not-pasta (x)
+  "X is not pasta."
   (reazon-conda
    ((reazon-== 'pasta x) #'reazon-!U)
    (#'reazon-!S)))
@@ -221,6 +229,7 @@
        (#'reazon-!U)))))
 
 (reazon-defrel reazon--test-onceo (goal)
+  "???"
   (reazon-condu
    (goal #'reazon-!S)
    (#'reazon-!U)))
