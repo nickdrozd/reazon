@@ -421,14 +421,18 @@ Also known as committed choice. This operator is impure."
        ((reazon--once ,head) ,@body)
        ,@rest))))
 
-(defmacro reazon-defrel (name varlist &rest goals)
-  "Define relation NAME with args VARLIST and body GOALS."
-  (declare (indent 2))
-  (let ((stream (gensym)))
+(defmacro reazon-defrel (name varlist &optional docstring &rest goals)
+  "Define relation NAME with args VARLIST and body GOALS, and a DOCSTRING."
+  (declare (indent 2)
+           (doc-string 3))
+  (let ((_docstring (if (stringp docstring) `(,docstring)))
+        (_goals (if (listp docstring) `(,docstring . ,goals) goals))
+        (stream (gensym)))
     `(defun ,name ,varlist
+       ,@_docstring
        (lambda (,stream)
          (lambda ()
-           (funcall (reazon-conj ,@goals) ,stream))))))
+           (funcall (reazon-conj ,@_goals) ,stream))))))
 
 (reazon-defrel reazon-caro (p a)
   (reazon-fresh (d)

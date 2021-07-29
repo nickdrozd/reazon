@@ -119,9 +119,21 @@
 (reazon-defrel reazon--test-teacupo (x)
   (reazon-disj (reazon-== x 'tea) (reazon-== x 'cup)))
 
+(reazon-defrel reazon--test-documented-teacupo (x)
+  "I have a docstring!"
+  (reazon-disj (reazon-== x 'tea) (reazon-== x 'cup)))
+
+(reazon-defrel reazon--test-empty-relo (x))
+
 (ert-deftest reazon-test-interface-defrel ()
   (reazon--should-equal '(tea cup)
     (reazon-run* x (reazon--test-teacupo x)))
+  (reazon--should-equal '(tea cup)
+    (reazon-run* x (reazon--test-documented-teacupo x)))
+  (reazon--should-equal "I have a docstring!"
+    (documentation #'reazon--test-documented-teacupo))
+  (reazon--should-equal '(_0)
+    (reazon-run* x (reazon--test-empty-relo x)))
   (reazon--should-equal '((nil t) (tea t) (cup t))
     (reazon-run* (x y)
       (reazon-conde
