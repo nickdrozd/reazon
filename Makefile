@@ -22,14 +22,14 @@ RUN_TEST = $(BATCH) $(DIRECTORY) $(TESTDIR)
 
 .PHONY: all clean compile test $(TEST)
 
-all: clean compile test
+all: compile test
 
 clean:
 	$(RM) $(OBJS)
 
 # This is here to make sure the byte compiler doesn't complain about
 # anything, but I don't think it loads any compiled code.
-compile:
+compile: clean
 	$(BATCH) $(COMPILE) $(LISP)
 	$(RUN_TEST) $(COMPILE) $(TEST)
 
