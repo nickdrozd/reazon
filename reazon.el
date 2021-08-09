@@ -40,6 +40,23 @@
 
 ;;; Code:
 
+;; -- Configuration --
+
+(defvar reazon-timeout nil
+  "The maximum amount of time in seconds that a query can take.
+
+If a query is interrupted, it will return any results it has
+collected so far.
+
+Consider let-binding this around your call to `reazon-run'
+instead of setqing it.")
+
+(defvar reazon--stop-time nil
+  "The time from epoch in seconds that a query should halt computation.
+
+Should not be set manually, derived from `reazon-timeout' when
+using `reazon-run' or `reazon-run*'.")
+
 ;; -- Variables --
 
 ;; Reazon variables need to be distinct from Lisp symbols. They are
@@ -165,21 +182,26 @@ STREAM-2, else append them as usual."
           (funcall rest)))))))
 
 (defun reazon--pull (stream)
-  "Force STREAM until it isn't a suspension, then return it."
+  "Force STREAM until it isn't a suspension or `reazon--stop-time' is reached."
   (let ((result stream))
-    (while (functionp result)
+    (while (and (functionp result)
+                (or (not reazon--stop-time)
+                    (> reazon--stop-time (float-time))))
       (setq result (funcall result)))
     result))
 
 (defun reazon--take (n stream)
-  "Pull N values from STREAM if N is positive else pull it without stopping."
+  "Pull N values from STREAM if N is positive else pull it without stopping.
+
+If `stream' is a function, then `reazon--pull' ended due to a
+timeout, and the values collected so far will be returned."
   (declare (indent 1))
-  (if (null stream)
+  (if (or (functionp stream) (null stream))
       nil
     (let ((count (if n (1- n) -1))
           (result (list (car stream)))
           (rest (reazon--pull (cdr stream))))
-      (while (and rest (not (zerop count)))
+      (while (and rest (not (zerop count)) (not (functionp rest)))
         (setq count (1- count))
         (setq result (cons (car rest) result))
         (setq rest (reazon--pull (cdr rest))))
@@ -383,7 +405,8 @@ either a symbol or a list."
              (reazon-== (list ,@vars) ,q)
              ,@goals)))
     (let ((var var/list))
-      `(let ((,var (reazon--make-variable ',var)))
+      `(let ((,var (reazon--make-variable ',var))
+             (reazon--stop-time (and reazon-timeout (+ reazon-timeout (float-time)))))
          (mapcar
           (reazon--reify ,var)
           (reazon--take ,n
