@@ -47,6 +47,21 @@
   (reazon--should-equal '(olive _0 oil)
     (reazon-run* x (reazon-disj (reazon-conj (reazon-== 'virgin x) #'reazon-!U) (reazon-disj (reazon-== 'olive x) (reazon-disj #'reazon-!S (reazon-== 'oil x)))))))
 
+(reazon-defrel reazon-test--alwayso ()
+  "Infinite successful goals."
+  (reazon-disj #'reazon-!S (reazon-test--alwayso)))
+
+(reazon-defrel reazon-test--nevero ()
+  "Infinite unsuccessful goals."
+  (reazon-disj #'reazon-!U (reazon-test--nevero)))
+
+(ert-deftest reazon-test-interface-timeout ()
+  (reazon--should-equal '()
+    (let ((reazon-timeout 0.01))
+      (reazon-run* q (reazon-test--nevero))))
+  ;; This test might fail if your computer is REALLY slow.
+  (should (> (length (let ((reazon-timeout 0.01)) (reazon-run* q (reazon-test--alwayso)))) 3)))
+
 (ert-deftest reazon-test-interface-fresh ()
   (reazon--should-equal '(t)
     (reazon-run* q
