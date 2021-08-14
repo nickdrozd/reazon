@@ -29,38 +29,76 @@
 
 (ert-deftest reazon-test-interface-run ()
   (reazon--should-equal '()
-    (reazon-run* q #'reazon-!U))
+    (reazon-run* q
+      #'reazon-!U))
   (reazon--should-equal '(t)
-    (reazon-run* q (reazon-== t q)))
+    (reazon-run* q
+      (reazon-== t q)))
   (reazon--should-equal '()
-    (reazon-run* q #'reazon-!U (reazon-== t q)))
+    (reazon-run* q
+      #'reazon-!U
+      (reazon-== t q)))
   (reazon--should-equal '(t)
-    (reazon-run* q #'reazon-!S (reazon-== t q)))
+    (reazon-run* q
+      #'reazon-!S
+      (reazon-== t q)))
   (reazon--should-equal '(corn)
-    (reazon-run* r #'reazon-!S (reazon-== 'corn r)))
+    (reazon-run* r
+      #'reazon-!S
+      (reazon-== 'corn r)))
   (reazon--should-equal '(olive oil)
-    (reazon-run* x (reazon-disj (reazon-== 'olive x) (reazon-== 'oil x))))
+    (reazon-run* x
+      (reazon-disj
+       (reazon-== 'olive x)
+       (reazon-== 'oil x))))
   (reazon--should-equal '(oil olive)
-    (reazon-run* x (reazon-disj (reazon-== 'oil x) (reazon-== 'olive x))))
+    (reazon-run* x
+      (reazon-disj
+       (reazon-== 'oil x)
+       (reazon-== 'olive x))))
   (reazon--should-equal '(oil)
-    (reazon-run* x (reazon-disj (reazon--conj-2 (reazon-== 'olive x) #'reazon-!U) (reazon-== 'oil x))))
+    (reazon-run* x
+      (reazon-disj
+       (reazon--conj-2
+        (reazon-== 'olive x)
+        #'reazon-!U)
+       (reazon-== 'oil x))))
   (reazon--should-equal '(olive _0 oil)
-    (reazon-run* x (reazon-disj (reazon-conj (reazon-== 'virgin x) #'reazon-!U) (reazon-disj (reazon-== 'olive x) (reazon-disj #'reazon-!S (reazon-== 'oil x)))))))
+    (reazon-run* x
+      (reazon-disj
+       (reazon-conj
+        (reazon-== 'virgin x)
+        #'reazon-!U)
+       (reazon-disj
+        (reazon-== 'olive x)
+        (reazon-disj
+         #'reazon-!S
+         (reazon-== 'oil x)))))))
 
 (reazon-defrel reazon-test--alwayso ()
   "Infinite successful goals."
-  (reazon-disj #'reazon-!S (reazon-test--alwayso)))
+  (reazon-disj
+   #'reazon-!S
+   (reazon-test--alwayso)))
 
 (reazon-defrel reazon-test--nevero ()
   "Infinite unsuccessful goals."
-  (reazon-disj #'reazon-!U (reazon-test--nevero)))
+  (reazon-disj
+   #'reazon-!U
+   (reazon-test--nevero)))
 
 (ert-deftest reazon-test-interface-timeout ()
   (reazon--should-equal '()
     (let ((reazon-timeout 0.01))
       (reazon-run* q (reazon-test--nevero))))
   ;; This test might fail if your computer is REALLY slow.
-  (should (> (length (let ((reazon-timeout 0.01)) (reazon-run* q (reazon-test--alwayso)))) 3)))
+  (should
+   (>
+    (length
+     (let ((reazon-timeout 0.01))
+       (reazon-run* q
+         (reazon-test--alwayso))))
+    3)))
 
 (ert-deftest reazon-test-interface-fresh ()
   (reazon--should-equal '(t)
@@ -160,8 +198,12 @@
   (reazon--should-equal '((nil tea) (nil cup) (tea _0) (cup _0))
     (reazon-run* (x y)
       (reazon--disj-2
-       (reazon--conj-2 (reazon--test-teacupo x) (reazon--test-teacupo x))
-       (reazon--conj-2 (reazon-== nil x) (reazon--test-teacupo y)))))
+       (reazon--conj-2
+        (reazon--test-teacupo x)
+        (reazon--test-teacupo x))
+       (reazon--conj-2
+        (reazon-== nil x)
+        (reazon--test-teacupo y)))))
   (reazon--should-equal '((t tea) (t cup) (tea _0) (cup _0))
     (reazon-run* (x y)
       (reazon-conde
@@ -192,8 +234,14 @@
 
 (ert-deftest reazon-test-interface-conda ()
   (reazon--should-equal '()
-    (reazon-run* q (reazon-conda (#'reazon-!U #'reazon-!S) (#'reazon-!U)))
-    (reazon-run* q (reazon-conda (#'reazon-!S #'reazon-!U) (#'reazon-!S)))
+    (reazon-run* q
+      (reazon-conda
+       (#'reazon-!U #'reazon-!S)
+       (#'reazon-!U)))
+    (reazon-run* q
+      (reazon-conda
+       (#'reazon-!S #'reazon-!U)
+       (#'reazon-!S)))
     (reazon-run* x
       (reazon-conda
        ((reazon-== 'virgin x) #'reazon-!U)
@@ -207,8 +255,14 @@
          ((reazon-== 'split x) (reazon-== x y))
          (#'reazon-!S)))))
   (reazon--should-equal '(_0)
-    (reazon-run* q (reazon-conda (#'reazon-!U #'reazon-!S) (#'reazon-!S)))
-    (reazon-run* q (reazon-conda (#'reazon-!S #'reazon-!S) (#'reazon-!U)))
+    (reazon-run* q
+      (reazon-conda
+       (#'reazon-!U #'reazon-!S)
+       (#'reazon-!S)))
+    (reazon-run* q
+      (reazon-conda
+       (#'reazon-!S #'reazon-!S)
+       (#'reazon-!U)))
     (reazon-run* q
       (reazon-fresh (x y)
         (reazon-== 'split x)
