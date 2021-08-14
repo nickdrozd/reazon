@@ -1,6 +1,7 @@
 * 0.4 (next)
 ** Added
 - Docstring support for defrel (@ethan-leba)
+- Add reazon-timeout option for limiting queries (@ethan-leba)
 
 * 0.3
 ** Added
