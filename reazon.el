@@ -51,12 +51,6 @@ collected so far.
 Consider let-binding this around your call to `reazon-run'
 instead of setqing it.")
 
-(defvar reazon--stop-time nil
-  "The time from epoch in seconds that a query should halt computation.
-
-Should not be set manually, derived from `reazon-timeout' when
-using `reazon-run' or `reazon-run*'.")
-
 ;; -- Variables --
 
 ;; Reazon variables need to be distinct from Lisp symbols. They are
@@ -180,6 +174,10 @@ STREAM-2, else append them as usual."
          (reazon--append
           stream-2
           (funcall rest)))))))
+
+(defvar reazon--stop-time nil
+  "The time from epoch in seconds that a query should halt computation.
+Should not be set manually; its value is derived from `reazon-timeout'.")
 
 (defun reazon--pull (stream)
   "Force STREAM until it isn't a suspension or `reazon--stop-time' is reached."
