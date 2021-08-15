@@ -58,12 +58,12 @@
 
 (ert-deftest reazon-test-unit-extend ()
   (reazon--with-variables (x y z)
-    (reazon--should-equal reazon--false
+    (reazon--should-equal 'e
+      (reazon--walk y (reazon--extend x 'e `((,z . ,x) (,y . ,z)))))
+    (reazon--should-error 'reazon-circular-query
       (reazon--extend x x '())
       (reazon--extend x `(,x) '())
-      (reazon--extend x `(,y) `((,y . ,x))))
-    (reazon--should-equal 'e
-      (reazon--walk y (reazon--extend x 'e `((,z . ,x) (,y . ,z)))))))
+      (reazon--extend x `(,y) `((,y . ,x))))))
 
 (ert-deftest reazon-test-unit-unify ()
   (reazon--with-variables (x y z)
@@ -77,7 +77,7 @@
       (reazon--unify `(,x ,y) `(,y ,x) '()))
     (reazon--should-equal `((,y . a) (,x . ,y))
       (reazon--unify `(,x ,y a) `(,y ,x ,x) '()))
-    (reazon--should-equal reazon--false
+    (reazon--should-error 'reazon-circular-query
       (reazon--unify x `(f ,x) '())
       (reazon--unify `(,x ,y) `((f ,y) (f ,x)) '())
       (reazon--unify `(,x ,y ,z) `((,y ,z) (,x ,z) (,x ,y)) '()))

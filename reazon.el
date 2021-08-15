@@ -110,6 +110,9 @@ their own.")
           (reazon--occurs-p var (cdr walked) sub)))
      (t nil))))
 
+(define-error 'reazon-circular-query
+  "Circular query detected")
+
 (defconst reazon--false (gensym)
   "A symbol to indicate substitution failure.
 In The Reasoned Schemer, several substitution-handling functions
@@ -122,7 +125,7 @@ indicate substitution failure.")
 (defun reazon--extend (var val sub)
   "Associate VAR and VAL in SUB."
   (if (and reazon-occurs-check (reazon--occurs-p var val sub))
-      reazon--false
+      (signal 'reazon-circular-query `(,var ,val ,sub))
     (cons `(,var . ,val) sub)))
 
 (defun reazon--unify (u v sub)

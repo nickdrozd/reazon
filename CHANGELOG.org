@@ -3,6 +3,7 @@
 - Docstring support for defrel (@ethan-leba)
 - Add reazon-timeout option for limiting queries (@ethan-leba)
 - Add flag for whether or not to run the occurs-check
+- Raise error on circular query
 
 * 0.3
 ** Added

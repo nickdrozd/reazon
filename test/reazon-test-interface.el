@@ -100,6 +100,13 @@
          (reazon-test--alwayso))))
     3)))
 
+(ert-deftest reazon-test-interface-circular-query ()
+  (reazon--should-error 'reazon-circular-query
+    (reazon-run* q
+      (reazon-== q `(,q)))
+    (reazon-run 10 q
+      (reazon-== q `(,q)))))
+
 (ert-deftest reazon-test-interface-fresh ()
   (reazon--should-equal '(t)
     (reazon-run* q
