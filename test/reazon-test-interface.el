@@ -180,15 +180,11 @@
   "X is tea or cup."
   (reazon-disj (reazon-== x 'tea) (reazon-== x 'cup)))
 
-(reazon-defrel reazon--test-empty-relo (_x))
-
 (ert-deftest reazon-test-interface-defrel ()
   (reazon--should-equal '(tea cup)
     (reazon-run* x (reazon--test-teacupo x)))
   (reazon--should-equal "X is tea or cup."
     (documentation #'reazon--test-teacupo))
-  ;; (reazon--should-equal '(_0)
-  ;;   (reazon-run* x (reazon--test-empty-relo x)))
   (reazon--should-equal '((nil t) (tea t) (cup t))
     (reazon-run* (x y)
       (reazon-conde
@@ -216,6 +212,18 @@
       (reazon-conde
        ((reazon--test-teacupo x) (reazon--test-teacupo x))
        ((reazon-== x t) (reazon--test-teacupo y))))))
+
+(reazon-defrel reazon--test-empty-relo (_x))
+(reazon-defrel reazon--test-empty-relo-with-doc (_x) "docstring")
+
+(ert-deftest reazon-test-interface-empty-relation ()
+  (reazon--should-equal '(_0)
+    (reazon-run* x (reazon--test-empty-relo-with-doc x))))
+
+(ert-deftest reazon-test-interface-empty-relation-fail ()
+  :expected-result :failed
+  (reazon--should-equal '(_0)
+    (reazon-run* x (reazon--test-empty-relo x))))
 
 (ert-deftest reazon--test-conde ()
   (reazon--should-equal '()

@@ -5,6 +5,9 @@
 - Add flag for whether or not to run the occurs-check
 - Raise error on circular query
 
+** Bugs
+- A relation defined with no docstring or body will not work properly.
+
 * 0.3
 ** Added
 - The impure operators conda and condu
