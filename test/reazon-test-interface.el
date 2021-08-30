@@ -218,10 +218,7 @@
 
 (ert-deftest reazon-test-interface-empty-relation ()
   (reazon--should-equal '(_0)
-    (reazon-run* x (reazon--test-empty-relo-with-doc x))))
-
-(ert-deftest reazon-test-interface-empty-relation-fail ()
-  :expected-result :failed
+    (reazon-run* x (reazon--test-empty-relo-with-doc x)))
   (reazon--should-equal '(_0)
     (reazon-run* x (reazon--test-empty-relo x))))
 
