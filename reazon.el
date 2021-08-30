@@ -458,10 +458,10 @@ Also known as committed choice. This operator is impure."
 
   ;; keep this nasty docstring logic
   ;; away from the relation definition
-  (if (stringp docstring)
-      (setq docstring `(,docstring))
-    (setq goals `(,docstring . ,goals)
-          docstring nil))
+  (cond
+   ((stringp docstring) (setq docstring `(,docstring)))
+   (docstring (setq goals `(,docstring . ,goals)
+                    docstring nil)))
 
   (let ((stream (gensym)))
     `(defun ,name ,varlist
