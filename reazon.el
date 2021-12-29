@@ -4,7 +4,7 @@
 
 ;; Author: Nick Drozd <nicholasdrozd@gmail.com>
 ;; URL: https://github.com/nickdrozd/reazon
-;; Version: 0.3
+;; Version: 0.4.1
 ;; Package-Requires: ((emacs "26"))
 ;; Keywords: languages, extensions, lisp
 
