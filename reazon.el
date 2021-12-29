@@ -204,16 +204,17 @@ Should not be set manually; its value is derived from `reazon-timeout'.")
 If `stream' is a function, then `reazon--pull' ended due to a
 timeout, and the values collected so far will be returned."
   (declare (indent 1))
-  (if (or (functionp stream) (null stream))
-      nil
-    (let ((count (if n (1- n) -1))
-          (result (list (car stream)))
-          (rest (reazon--pull (cdr stream))))
-      (while (and rest (not (zerop count)) (not (functionp rest)))
-        (setq count (1- count))
-        (setq result (cons (car rest) result))
-        (setq rest (reazon--pull (cdr rest))))
-      (nreverse result))))
+  (cond
+   ((or (functionp stream) (null stream)) nil)
+   ((equal 1 n) (list (car stream)))
+   (t (let ((count (if n (1- n) -1))
+            (result (list (car stream)))
+            (rest (reazon--pull (cdr stream))))
+        (while (and rest (not (zerop count)) (not (functionp rest)))
+          (setq count (1- count))
+          (setq result (cons (car rest) result))
+          (setq rest (reazon--pull (cdr rest))))
+        (nreverse result)))))
 
 ;; -- Goals --
 
