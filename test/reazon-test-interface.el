@@ -347,6 +347,23 @@
     (reazon-run* q (reazon-conda))
     (reazon-run* q (reazon-condu))))
 
+(ert-deftest reazon-test-interface-conda-bug ()
+  :expected-result :failed
+  (reazon--should-equal '(a1)
+    (reazon-run* x
+      (reazon-conde
+       ((reazon-== x 'a1))
+       ((reazon-== x 'a2)))
+      (reazon-conda
+       ((reazon-== x 'a2) #'reazon-!U)
+       (#'reazon-!S)))
+    (reazon-run* (x)
+      (reazon-conde
+       ((reazon-== x 'a1))
+       ((reazon-== x 'a2)))
+      (reazon-conda
+       ((reazon-== x 'a2) (reazon-== x 'c))
+       ((reazon-== x x))))))
 
 (provide 'reazon-test-interface)
 ;;; reazon-test-interface.el ends here
