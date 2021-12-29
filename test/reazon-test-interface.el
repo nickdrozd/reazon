@@ -85,7 +85,12 @@
         (reazon-== 'olive x)
         (reazon-disj
          #'reazon-!S
-         (reazon-== 'oil x)))))))
+         (reazon-== 'oil x))))))
+  (reazon--should-equal '(done)
+    (reazon-run 1 q
+      (reazon-disj
+       (reazon-== q 'done)
+       (reazon-test--nevero)))))
 
 (ert-deftest reazon-test-interface-timeout ()
   (reazon--should-equal '()
