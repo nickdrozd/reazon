@@ -27,6 +27,18 @@
 
 (require 'reazon-test-utils)
 
+(reazon-defrel reazon-test--alwayso ()
+  "Infinite successful goals."
+  (reazon-disj
+   #'reazon-!S
+   (reazon-test--alwayso)))
+
+(reazon-defrel reazon-test--nevero ()
+  "Infinite unsuccessful goals."
+  (reazon-disj
+   #'reazon-!U
+   (reazon-test--nevero)))
+
 (ert-deftest reazon-test-interface-run ()
   (reazon--should-equal '()
     (reazon-run* q
@@ -74,18 +86,6 @@
         (reazon-disj
          #'reazon-!S
          (reazon-== 'oil x)))))))
-
-(reazon-defrel reazon-test--alwayso ()
-  "Infinite successful goals."
-  (reazon-disj
-   #'reazon-!S
-   (reazon-test--alwayso)))
-
-(reazon-defrel reazon-test--nevero ()
-  "Infinite unsuccessful goals."
-  (reazon-disj
-   #'reazon-!U
-   (reazon-test--nevero)))
 
 (ert-deftest reazon-test-interface-timeout ()
   (reazon--should-equal '()
