@@ -1,5 +1,9 @@
 * 0.5 (next)
 
+* 0.4.1
+** Fixed
+- reazon--take was taking too many (@ethan-leba)
+
 * 0.4
 ** Added
 - Docstring support for defrel (@ethan-leba)
