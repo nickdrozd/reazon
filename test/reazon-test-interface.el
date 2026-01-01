@@ -357,7 +357,7 @@
       (reazon-conda
        ((reazon-== x 'a2) #'reazon-!U)
        (#'reazon-!S)))
-    (reazon-run* (x)
+    (reazon-run* x
       (reazon-conde
        ((reazon-== x 'a1))
        ((reazon-== x 'a2)))
