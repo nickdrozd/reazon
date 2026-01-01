@@ -348,7 +348,6 @@
     (reazon-run* q (reazon-condu))))
 
 (ert-deftest reazon-test-interface-conda-bug ()
-  :expected-result :failed
   (reazon--should-equal '(a1)
     (reazon-run* x
       (reazon-conde

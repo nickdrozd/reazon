@@ -272,14 +272,13 @@ This primitive goal succeeds if they both do."
   "Run CONSQ if TEST succeeds, else ALT."
   (declare (indent 1))
   (lambda (s)
-    (reazon--ifte-help (funcall test s) consq alt)))
+    (reazon--ifte-help s (funcall test s) consq alt)))
 
-(defun reazon--ifte-help (stream consq alt)
-  "Run ALT with STREAM if it's nil, else CONSQ."
+(defun reazon--ifte-help (s stream consq alt)
   (cond
-   ((null stream) (funcall alt stream))
+   ((null stream) (funcall alt s))
    ((functionp stream)
-    (lambda () (reazon--ifte-help (funcall stream) consq alt)))
+    (lambda () (reazon--ifte-help s (funcall stream) consq alt)))
    (t (reazon--append-map consq stream))))
 
 (defun reazon--once (goal)
